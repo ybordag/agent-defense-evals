@@ -1,5 +1,6 @@
 """Structured-action policy backed by any model runtime."""
 
+import copy
 import json
 
 from agent_defense_evals.agents.base import PolicyDecision
@@ -121,6 +122,24 @@ class StructuredModelAgent:
             "JSON action:"
         )
 
+    @classmethod
+    def _action_schema(cls, observation: Observation) -> dict[str, object]:
+        schema = copy.deepcopy(cls.ACTION_SCHEMA)
+        message_schema = schema["oneOf"][0]
+        select_schema = schema["oneOf"][1]
+        other_agents = list(map(str, observation.public_state.get("other_agents", ())))
+        known_plans = list(map(str, observation.public_state.get("scores", {})))
+        message_schema["properties"]["recipient_ids"]["items"]["enum"] = (
+            other_agents
+        )
+        message_schema["properties"]["payload"]["properties"][
+            "allowed_plans"
+        ]["items"]["enum"] = known_plans
+        select_schema["properties"]["payload"]["properties"]["plan_id"][
+            "enum"
+        ] = known_plans
+        return schema
+
     @staticmethod
     def _parse_object(text: str) -> dict[str, object]:
         start = text.find("{")
@@ -147,7 +166,7 @@ class StructuredModelAgent:
                 observation.step,
             ),
             capture=self.capture,
-            response_schema=self.ACTION_SCHEMA,
+            response_schema=self._action_schema(observation),
         )
         generation = self.runtime.generate(request)
         raw_action = self._parse_object(generation.text)
