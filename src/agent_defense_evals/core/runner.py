@@ -112,6 +112,7 @@ class ExperimentRunner:
             },
         )
         frontier: tuple[UUID, ...] = (started.event_id,)
+        resource_events: dict[str, UUID] = {}
         steps_executed = 0
 
         for step in range(self.spec.max_steps):
@@ -145,12 +146,24 @@ class ExperimentRunner:
                     )
                     action_parent = generated.event_id
                 action = policy_decision.action
+                referenced_resources: list[str] = []
+                if action.kind.value == "create_artifact":
+                    referenced_resources.extend(
+                        map(str, action.payload.get("source_artifact_ids", ()))
+                    )
+                elif "artifact_id" in action.payload:
+                    referenced_resources.append(str(action.payload["artifact_id"]))
+                resource_parents = tuple(
+                    resource_events[resource_id]
+                    for resource_id in referenced_resources
+                    if resource_id in resource_events
+                )
                 proposed = recorder.record(
                     EventKind.ACTION_PROPOSED,
                     step=step,
                     actor_id=agent.agent_id,
                     recipient_ids=action.recipient_ids,
-                    parent_ids=(action_parent,),
+                    parent_ids=tuple(dict.fromkeys((action_parent, *resource_parents))),
                     payload={"action": action.model_dump(mode="json")},
                 )
                 proposals.append((action, proposed))
@@ -210,7 +223,16 @@ class ExperimentRunner:
                         "action": final_decision.action.model_dump(mode="json"),
                         "scenario": self.scenario.snapshot(),
                     },
+                    risk_level=(
+                        1.0
+                        if final_decision.action.kind.value == "execute_artifact"
+                        else 0.0
+                    ),
+                    reversible=final_decision.action.kind.value != "execute_artifact",
                 )
+                artifact_id = final_decision.action.payload.get("artifact_id")
+                if artifact_id is not None:
+                    resource_events[str(artifact_id)] = applied.event_id
                 next_frontier.append(applied.event_id)
 
             frontier = tuple(next_frontier)

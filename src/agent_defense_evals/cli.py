@@ -21,6 +21,14 @@ from agent_defense_evals.experiments.causal_information import (
     CausalInformationSpec,
     run_causal_information,
 )
+from agent_defense_evals.experiments.coalitional_hyperproperties import (
+    CoalitionalHyperpropertySpec,
+    run_coalitional_hyperproperties,
+)
+from agent_defense_evals.experiments.heterogeneous_policy_audit import (
+    HeterogeneousPolicyAuditSpec,
+    run_heterogeneous_policy_audit,
+)
 from agent_defense_evals.experiments.white_box_information import (
     WhiteBoxInformationSpec,
     run_white_box_information,
@@ -49,6 +57,14 @@ def build_parser() -> argparse.ArgumentParser:
     phase3_white_box = subparsers.add_parser("phase3-white-box")
     phase3_white_box.add_argument("--config", type=Path, required=True)
     phase3_white_box.add_argument("--output", type=Path, required=True)
+
+    phase4 = subparsers.add_parser("phase4-run")
+    phase4.add_argument("--config", type=Path, required=True)
+    phase4.add_argument("--output", type=Path, required=True)
+
+    phase4_model = subparsers.add_parser("phase4-model-audit")
+    phase4_model.add_argument("--config", type=Path, required=True)
+    phase4_model.add_argument("--output", type=Path, required=True)
     return parser
 
 
@@ -104,6 +120,24 @@ def main(argv: Sequence[str] | None = None) -> None:
     if args.command == "phase3-white-box":
         spec = load_yaml(args.config, WhiteBoxInformationSpec)
         report = run_white_box_information(spec)
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(
+            report.model_dump_json(indent=2) + "\n", encoding="utf-8"
+        )
+        print(report.model_dump_json(indent=2))
+        return
+    if args.command == "phase4-run":
+        spec = load_yaml(args.config, CoalitionalHyperpropertySpec)
+        report = run_coalitional_hyperproperties(spec)
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(
+            report.model_dump_json(indent=2) + "\n", encoding="utf-8"
+        )
+        print(report.model_dump_json(indent=2))
+        return
+    if args.command == "phase4-model-audit":
+        spec = load_yaml(args.config, HeterogeneousPolicyAuditSpec)
+        report = run_heterogeneous_policy_audit(spec)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(
             report.model_dump_json(indent=2) + "\n", encoding="utf-8"

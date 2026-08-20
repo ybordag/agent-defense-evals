@@ -21,3 +21,6 @@ def test_completion_has_action_ancestors() -> None:
     assert graph.node_count == len(trace.events)
     assert len(selection_events) == 1
     assert selection_events[0].event_id in ancestors
+    path = graph.shortest_path(trace.events[0].event_id, completed.event_id)
+    assert path[0] == trace.events[0].event_id
+    assert path[-1] == completed.event_id

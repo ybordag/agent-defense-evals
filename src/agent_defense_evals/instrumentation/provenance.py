@@ -44,3 +44,18 @@ class ProvenanceGraph:
             visited.add(current)
             pending.extend(self._children[current] - visited)
         return frozenset(visited)
+
+    def shortest_path(self, source: UUID, target: UUID) -> tuple[UUID, ...]:
+        if source == target:
+            return (source,)
+        pending: list[tuple[UUID, tuple[UUID, ...]]] = [(source, (source,))]
+        visited = {source}
+        while pending:
+            current, path = pending.pop(0)
+            for child in sorted(self._children[current], key=str):
+                if child == target:
+                    return (*path, child)
+                if child not in visited:
+                    visited.add(child)
+                    pending.append((child, (*path, child)))
+        raise ValueError(f"no provenance path from {source} to {target}")

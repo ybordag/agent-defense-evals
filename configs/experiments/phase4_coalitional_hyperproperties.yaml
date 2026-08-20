@@ -1,0 +1,14 @@
+experiment_id: phase4-coalitional-hyperproperties
+base_seed: 20260820
+max_coalition_size: 3
+topologies: [chain, tree, sparse_mesh, dense]
+
+dimensions:
+  detectability_target: 0.5
+  coalition_size: 3
+  cascade_branching: 1.0
+  composition_depth: 5
+  horizon: 5
+  attribution_degradation: 0.25
+  directness: explicit
+  reversibility: 0.0

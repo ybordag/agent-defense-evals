@@ -2,6 +2,7 @@
 
 from collections.abc import Mapping
 
+from agent_defense_evals.agents.artifact_workflow import ArtifactWorkflowAgent
 from agent_defense_evals.agents.base import AgentPolicy
 from agent_defense_evals.agents.model import StructuredModelAgent
 from agent_defense_evals.agents.scripted import ConstraintSharingAgent
@@ -20,6 +21,7 @@ from agent_defense_evals.models.base import ModelRuntime
 from agent_defense_evals.models.openai_runtime import OpenAICompatibleRuntime
 from agent_defense_evals.models.transformers_runtime import TransformersWhiteBoxRuntime
 from agent_defense_evals.models.types import ModelCaptureSpec
+from agent_defense_evals.scenarios.artifact_workflow import ArtifactWorkflowScenario
 from agent_defense_evals.scenarios.base import Scenario
 from agent_defense_evals.scenarios.distributed_choice import DistributedChoiceScenario
 from agent_defense_evals.scenarios.secret_relay import SecretRelayScenario
@@ -30,6 +32,8 @@ def build_scenario(spec: ExperimentSpec) -> Scenario:
         return DistributedChoiceScenario(spec.scenario.config)
     if spec.scenario.kind == "secret_relay":
         return SecretRelayScenario(spec.scenario.config)
+    if spec.scenario.kind == "artifact_workflow":
+        return ArtifactWorkflowScenario(spec.scenario.config)
     raise ValueError(f"unknown scenario kind: {spec.scenario.kind}")
 
 
@@ -130,6 +134,18 @@ def build_agents(
             continue
         if agent.policy.kind == "sentinel":
             agents.append(SentinelAgent(agent.agent_id))
+            continue
+        if agent.policy.kind == "artifact_workflow":
+            config = agent.policy.config
+            agents.append(
+                ArtifactWorkflowAgent(
+                    agent.agent_id,
+                    role=agent.role,
+                    compromised=bool(config.get("compromised", False)),
+                    recipients=tuple(map(str, config.get("recipients", ()))),
+                    policy_backend=str(config.get("policy_backend", "rules-v1")),
+                )
+            )
             continue
         raise ValueError(f"unknown policy kind: {agent.policy.kind}")
     return tuple(agents)

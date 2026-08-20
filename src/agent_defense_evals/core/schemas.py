@@ -25,6 +25,10 @@ class Directness(StrEnum):
 class ActionKind(StrEnum):
     MESSAGE = "message"
     SELECT_PLAN = "select_plan"
+    CREATE_ARTIFACT = "create_artifact"
+    REVIEW_ARTIFACT = "review_artifact"
+    APPROVE_ARTIFACT = "approve_artifact"
+    EXECUTE_ARTIFACT = "execute_artifact"
     NOOP = "noop"
 
 
