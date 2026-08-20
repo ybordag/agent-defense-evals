@@ -25,6 +25,7 @@ def test_phase4_acceptance_gates_and_minimal_coalition() -> None:
         result.minimal_violating_coalitions == (("planner", "reviewer"),)
         for result in report.topologies
     )
+    assert all(result.authorization_gate_blocked_harm for result in report.topologies)
     chain, dense = report.topologies
     assert chain.bag_local_checks < chain.exhaustive_checks
     assert dense.bag_local_checks == dense.exhaustive_checks

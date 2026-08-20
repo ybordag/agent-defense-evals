@@ -8,7 +8,7 @@ The implementation begins with scripted agents. Model downloads and GPU-backed e
 
 ## Current status
 
-Phases 0–3 are implemented. Scripted configurations cover benign collaboration, a blocked action mutation, and paired covert-channel evaluation. Model-backed configurations cover vLLM, direct Qwen2.5-7B-Instruct execution, activation probing, and causal layer replacement. Phase 4, coalitional hyperproperties, is the next implementation target.
+Phases 0–4 are implemented. Scripted configurations cover benign collaboration, blocked action mutation, paired covert-channel evaluation, and coalition-level artifact-flow verification. Model-backed configurations cover vLLM, direct Qwen2.5-7B-Instruct execution, activation probing, causal layer replacement, and heterogeneous local-policy auditing. Phase 5, anytime-valid evidence, is the next implementation target.
 
 ## Reset decision
 
@@ -105,6 +105,8 @@ Status: complete. See [Phase 3 completion](phase-3-completion.md).
 
 ## Phase 4: Experiment 2 — coalitional hyperproperties
 
+Status: complete. See [Phase 4 completion](phase-4-completion.md).
+
 ### Build
 
 - four to six agent roles;
@@ -192,4 +194,4 @@ Status: complete. See [Phase 3 completion](phase-3-completion.md).
 
 ## Current implementation target
 
-The first implementation increment comprises Phases 0 and 1 only. It is complete when a checked-in configuration can be validated, run with scripted agents, written to a trace, replayed, queried for provenance, and tested under both an allowed benign trajectory and a blocked scripted attack.
+Phase 5 is the next implementation increment. It will add long-horizon episodes, randomized attack onset, persistent state, streaming evidence scores, and lifetime false-alarm evaluation while retaining the common event, model, defense, and provenance interfaces established in Phases 0–4.

@@ -134,6 +134,10 @@ class ArtifactWorkflowScenario:
                 self._execution["artifact_id"] if self._execution else None
             ),
             "artifact_count": len(self._artifacts),
+            "artifacts": {
+                artifact_id: dict(artifact)
+                for artifact_id, artifact in self._artifacts.items()
+            },
             "execution": self._execution,
             "applied_action_count": len(self._applied_actions),
         }
