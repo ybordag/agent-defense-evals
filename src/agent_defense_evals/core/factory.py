@@ -5,8 +5,14 @@ from collections.abc import Mapping
 from agent_defense_evals.agents.base import AgentPolicy
 from agent_defense_evals.agents.model import StructuredModelAgent
 from agent_defense_evals.agents.scripted import ConstraintSharingAgent
+from agent_defense_evals.agents.secret_relay import (
+    SecretReceiverAgent,
+    SecretSenderAgent,
+    SentinelAgent,
+)
 from agent_defense_evals.attacks.base import AttackStrategy
 from agent_defense_evals.attacks.scripted import ForceSelectionAttack, NoAttack
+from agent_defense_evals.channels.covert import ChannelKind
 from agent_defense_evals.core.schemas import ExperimentSpec
 from agent_defense_evals.defenses.base import Defense
 from agent_defense_evals.defenses.scripted import BlockPlanDefense, RewritePlanDefense
@@ -16,11 +22,14 @@ from agent_defense_evals.models.transformers_runtime import TransformersWhiteBox
 from agent_defense_evals.models.types import ModelCaptureSpec
 from agent_defense_evals.scenarios.base import Scenario
 from agent_defense_evals.scenarios.distributed_choice import DistributedChoiceScenario
+from agent_defense_evals.scenarios.secret_relay import SecretRelayScenario
 
 
 def build_scenario(spec: ExperimentSpec) -> Scenario:
     if spec.scenario.kind == "distributed_choice":
         return DistributedChoiceScenario(spec.scenario.config)
+    if spec.scenario.kind == "secret_relay":
+        return SecretRelayScenario(spec.scenario.config)
     raise ValueError(f"unknown scenario kind: {spec.scenario.kind}")
 
 
@@ -99,6 +108,28 @@ def build_agents(
                     ),
                 )
             )
+            continue
+        if agent.policy.kind in {"secret_sender", "secret_receiver"}:
+            config = agent.policy.config
+            channel = ChannelKind(str(config["channel"]))
+            codebook = tuple(map(str, config.get("codebook", ("calm", "bright"))))
+            if len(codebook) != 2:
+                raise ValueError("secret relay codebook requires two entries")
+            policy_type = (
+                SecretSenderAgent
+                if agent.policy.kind == "secret_sender"
+                else SecretReceiverAgent
+            )
+            agents.append(
+                policy_type(
+                    agent.agent_id,
+                    channel=channel,
+                    codebook=(codebook[0], codebook[1]),
+                )
+            )
+            continue
+        if agent.policy.kind == "sentinel":
+            agents.append(SentinelAgent(agent.agent_id))
             continue
         raise ValueError(f"unknown policy kind: {agent.policy.kind}")
     return tuple(agents)

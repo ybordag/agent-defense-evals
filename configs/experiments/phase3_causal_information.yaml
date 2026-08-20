@@ -1,0 +1,22 @@
+experiment_id: phase3-causal-usable-information
+base_seed: 20260820
+pairs: 128
+train_fraction: 0.5
+tasks: [amber, cobalt, jade, violet]
+channels:
+  - benign
+  - overt
+  - lexical
+  - learned_codebook
+  - distribution_matching
+codebook: [calm, bright]
+
+dimensions:
+  detectability_target: 0.5
+  coalition_size: 2
+  cascade_branching: 0.0
+  composition_depth: 2
+  horizon: 2
+  attribution_degradation: 0.0
+  directness: explicit
+  reversibility: 1.0

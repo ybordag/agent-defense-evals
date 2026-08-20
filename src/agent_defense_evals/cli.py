@@ -5,7 +5,7 @@ import json
 from collections.abc import Sequence
 from pathlib import Path
 
-from agent_defense_evals.core.config import load_experiment
+from agent_defense_evals.core.config import load_experiment, load_yaml
 from agent_defense_evals.core.events import JsonlEventStore
 from agent_defense_evals.core.factory import (
     build_agents,
@@ -17,6 +17,14 @@ from agent_defense_evals.core.runner import ExperimentRunner
 from agent_defense_evals.core.schemas import EventKind
 from agent_defense_evals.core.trace import Trace
 from agent_defense_evals.defenses.gateway import DefenseGateway
+from agent_defense_evals.experiments.causal_information import (
+    CausalInformationSpec,
+    run_causal_information,
+)
+from agent_defense_evals.experiments.white_box_information import (
+    WhiteBoxInformationSpec,
+    run_white_box_information,
+)
 from agent_defense_evals.instrumentation.provenance import ProvenanceGraph
 
 
@@ -33,6 +41,14 @@ def build_parser() -> argparse.ArgumentParser:
 
     replay = subparsers.add_parser("replay")
     replay.add_argument("--events", type=Path, required=True)
+
+    phase3 = subparsers.add_parser("phase3-run")
+    phase3.add_argument("--config", type=Path, required=True)
+    phase3.add_argument("--output", type=Path, required=True)
+
+    phase3_white_box = subparsers.add_parser("phase3-white-box")
+    phase3_white_box.add_argument("--config", type=Path, required=True)
+    phase3_white_box.add_argument("--output", type=Path, required=True)
     return parser
 
 
@@ -75,3 +91,21 @@ def main(argv: Sequence[str] | None = None) -> None:
             "outcome": terminal.payload,
         }
         print(json.dumps(summary, indent=2, sort_keys=True))
+        return
+    if args.command == "phase3-run":
+        spec = load_yaml(args.config, CausalInformationSpec)
+        report = run_causal_information(spec)
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(
+            report.model_dump_json(indent=2) + "\n", encoding="utf-8"
+        )
+        print(report.model_dump_json(indent=2))
+        return
+    if args.command == "phase3-white-box":
+        spec = load_yaml(args.config, WhiteBoxInformationSpec)
+        report = run_white_box_information(spec)
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(
+            report.model_dump_json(indent=2) + "\n", encoding="utf-8"
+        )
+        print(report.model_dump_json(indent=2))

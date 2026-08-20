@@ -1,0 +1,14 @@
+experiment_id: phase3-white-box-7b
+base_seed: 20260820
+model_id: Qwen/Qwen2.5-7B-Instruct
+model_revision: a09a35458c702b33eeacc393d103063234e8bc28
+device: cuda
+pairs: 8
+train_fraction: 0.5
+probe_module: model.layers.14
+patch_modules:
+  - model.layers.0
+  - model.layers.7
+  - model.layers.14
+  - model.layers.21
+  - model.layers.27
