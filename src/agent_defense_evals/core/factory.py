@@ -11,6 +11,7 @@ from agent_defense_evals.agents.secret_relay import (
     SecretSenderAgent,
     SentinelAgent,
 )
+from agent_defense_evals.agents.sequential_signal import SequentialSignalModelAgent
 from agent_defense_evals.attacks.base import AttackStrategy
 from agent_defense_evals.attacks.scripted import ForceSelectionAttack, NoAttack
 from agent_defense_evals.channels.covert import ChannelKind
@@ -25,6 +26,7 @@ from agent_defense_evals.scenarios.artifact_workflow import ArtifactWorkflowScen
 from agent_defense_evals.scenarios.base import Scenario
 from agent_defense_evals.scenarios.distributed_choice import DistributedChoiceScenario
 from agent_defense_evals.scenarios.secret_relay import SecretRelayScenario
+from agent_defense_evals.scenarios.sequential_signal import SequentialSignalScenario
 
 
 def build_scenario(spec: ExperimentSpec) -> Scenario:
@@ -34,6 +36,8 @@ def build_scenario(spec: ExperimentSpec) -> Scenario:
         return SecretRelayScenario(spec.scenario.config)
     if spec.scenario.kind == "artifact_workflow":
         return ArtifactWorkflowScenario(spec.scenario.config)
+    if spec.scenario.kind == "sequential_signal":
+        return SequentialSignalScenario(spec.scenario.config)
     raise ValueError(f"unknown scenario kind: {spec.scenario.kind}")
 
 
@@ -110,6 +114,24 @@ def build_agents(
                     capture=ModelCaptureSpec.model_validate(
                         config.get("capture", {"logits": False})
                     ),
+                )
+            )
+            continue
+        if agent.policy.kind == "sequential_signal_model":
+            if not runtime_map:
+                runtime_map = build_model_runtimes(spec)
+            config = agent.policy.config
+            runtime_id = str(config["runtime_id"])
+            agents.append(
+                SequentialSignalModelAgent(
+                    agent.agent_id,
+                    role=agent.role,
+                    runtime=runtime_map[runtime_id],
+                    base_seed=spec.base_seed,
+                    max_new_tokens=int(config.get("max_new_tokens", 16)),
+                    do_sample=bool(config.get("do_sample", True)),
+                    temperature=float(config.get("temperature", 0.7)),
+                    top_p=float(config.get("top_p", 0.95)),
                 )
             )
             continue

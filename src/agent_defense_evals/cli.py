@@ -33,6 +33,10 @@ from agent_defense_evals.experiments.heterogeneous_policy_audit import (
     HeterogeneousPolicyAuditSpec,
     run_heterogeneous_policy_audit,
 )
+from agent_defense_evals.experiments.model_trace_evidence import (
+    ModelTraceEvidenceSpec,
+    run_model_trace_evidence,
+)
 from agent_defense_evals.experiments.white_box_information import (
     WhiteBoxInformationSpec,
     run_white_box_information,
@@ -73,6 +77,10 @@ def build_parser() -> argparse.ArgumentParser:
     phase5 = subparsers.add_parser("phase5-run")
     phase5.add_argument("--config", type=Path, required=True)
     phase5.add_argument("--output", type=Path, required=True)
+
+    phase5_model = subparsers.add_parser("phase5-model-run")
+    phase5_model.add_argument("--config", type=Path, required=True)
+    phase5_model.add_argument("--output", type=Path, required=True)
     return parser
 
 
@@ -155,6 +163,15 @@ def main(argv: Sequence[str] | None = None) -> None:
     if args.command == "phase5-run":
         spec = load_yaml(args.config, AnytimeEvidenceSpec)
         report = run_anytime_evidence(spec)
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(
+            report.model_dump_json(indent=2) + "\n", encoding="utf-8"
+        )
+        print(report.model_dump_json(indent=2))
+        return
+    if args.command == "phase5-model-run":
+        spec = load_yaml(args.config, ModelTraceEvidenceSpec)
+        report = run_model_trace_evidence(spec)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(
             report.model_dump_json(indent=2) + "\n", encoding="utf-8"

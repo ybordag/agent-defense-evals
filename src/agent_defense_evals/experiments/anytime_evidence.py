@@ -40,8 +40,8 @@ class AnytimeEvidenceSpec(FrozenModel):
     experiment_id: str = Field(min_length=1)
     base_seed: int = Field(ge=0)
     horizon: int = Field(default=256, ge=100, le=1_000)
-    calibration_episodes: int = Field(default=400, ge=40)
-    evaluation_episodes: int = Field(default=400, ge=40)
+    calibration_episodes: int = Field(default=400, ge=1)
+    evaluation_episodes: int = Field(default=400, ge=1)
     alpha: float = Field(default=0.05, gt=0.0, lt=0.5)
     null_mean_upper: float = Field(default=0.08, gt=0.0, lt=1.0)
     base_rate: float = Field(default=0.025, ge=0.0, lt=1.0)
@@ -165,7 +165,7 @@ def _probability(
     raise ValueError(f"unsupported stream condition: {condition}")
 
 
-def _generate_stream(
+def generate_stream(
     spec: AnytimeEvidenceSpec,
     condition: StreamCondition,
     episode_index: int,
@@ -210,7 +210,7 @@ def _upper_quantile(values: list[float], alpha: float) -> float:
     return ordered[rank - 1]
 
 
-def _calibrate_baselines(
+def calibrate_baselines(
     spec: AnytimeEvidenceSpec,
     calibration: tuple[StreamSample, ...],
 ) -> tuple[float, float]:
@@ -228,7 +228,7 @@ def _calibrate_baselines(
     )
 
 
-def _monitor_factories(
+def monitor_factories(
     spec: AnytimeEvidenceSpec,
     fixed_threshold: float,
     cusum_threshold: float,
@@ -247,7 +247,7 @@ def _monitor_factories(
     }
 
 
-def _summarize(
+def summarize_monitor_condition(
     monitor_id: str,
     condition: StreamCondition,
     samples: tuple[StreamSample, ...],
@@ -302,7 +302,7 @@ def _summarize(
 
 def run_anytime_evidence(spec: AnytimeEvidenceSpec) -> AnytimeEvidenceReport:
     calibration = tuple(
-        _generate_stream(
+        generate_stream(
             spec,
             (
                 StreamCondition.BENIGN_STATIONARY
@@ -314,10 +314,10 @@ def run_anytime_evidence(spec: AnytimeEvidenceSpec) -> AnytimeEvidenceReport:
         )
         for index in range(spec.calibration_episodes)
     )
-    fixed_threshold, cusum_threshold = _calibrate_baselines(spec, calibration)
+    fixed_threshold, cusum_threshold = calibrate_baselines(spec, calibration)
     by_condition = {
         condition: tuple(
-            _generate_stream(
+            generate_stream(
                 spec,
                 condition,
                 index,
@@ -327,9 +327,9 @@ def run_anytime_evidence(spec: AnytimeEvidenceSpec) -> AnytimeEvidenceReport:
         )
         for condition in StreamCondition
     }
-    factories = _monitor_factories(spec, fixed_threshold, cusum_threshold)
+    factories = monitor_factories(spec, fixed_threshold, cusum_threshold)
     results = tuple(
-        _summarize(monitor_id, condition, samples, factory)
+        summarize_monitor_condition(monitor_id, condition, samples, factory)
         for monitor_id, factory in factories.items()
         for condition, samples in by_condition.items()
     )
