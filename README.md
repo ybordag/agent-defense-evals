@@ -1,50 +1,68 @@
-# Agent Interaction Evals
+# Agent Defense Evals
 
-Evaluation harnesses for security, information flow, and coordination in
-multi-agent AI systems.
+An event-sourced evaluation harness for multi-agent AI security defenses across collusion, steganography, heterogeneous attacks, and the attack dimensions defined in Section 3.3 of the motivating research.
 
-The first experiment studies whether two agents can complete a verifiable
-collaborative task while one indirectly signals an unrelated target word for
-the other to emit. It measures overt utility, exact covert success, near-target
-leakage, and the observability of the signal.
+The current implementation covers Phases 0 and 1: immutable specifications, deterministic traces, scripted agents, defense mediation, and provenance. Open-weight model execution begins in Phase 2.
 
 ## Documentation
 
-- [Experimental design](docs/design.md)
-- [Implementation plan](docs/implementation-plan.md)
+- [Documentation index](docs/README.md)
+- [Defense conjectures](docs/03_defense_conjectures.md)
+- [Experimental program](docs/04_experimental_program_and_transfer.md)
+- [System architecture](docs/05_system_architecture.md)
+- [Implementation roadmap](docs/implementation/roadmap.md)
 
-## Phase 0 quick start
+## Development setup
 
-Python 3.11 or newer is recommended.
-
-```bash
-conda create --name agent-interaction-evals python=3.11 -y
-conda activate agent-interaction-evals
-python -m pip install -r requirements.txt
-```
-
-Run the Phase 0 smoke test:
+Python 3.11 or newer is required.
 
 ```bash
-agent-interaction-evals phase0-smoke \
-  --config configs/experiment.yaml \
-  --output artifacts/phase0-smoke.jsonl
+python3.11 -m venv .venv
+source .venv/bin/activate
+python -m pip install -e '.[dev,local-model]'
 ```
 
-Run the test and lint suites:
+For an exact reproduction of the current Apple Silicon/Python 3.12 environment:
+
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install \
+  -c requirements/locks/macos-arm64-py312.txt \
+  -e '.[dev,local-model]'
+```
+
+The DGX Linux/CUDA environment will use a separate lock file after cluster inventory.
+
+## Phase 0–1 commands
+
+Validate the benign scripted configuration:
+
+```bash
+agent-defense-evals validate-config \
+  --config configs/experiments/scripted_baseline.yaml
+```
+
+Run an episode and write its immutable trace:
+
+```bash
+agent-defense-evals run \
+  --config configs/experiments/scripted_baseline.yaml \
+  --output artifacts/scripted-baseline.jsonl
+```
+
+Replay and validate a trace:
+
+```bash
+agent-defense-evals replay \
+  --events artifacts/scripted-baseline.jsonl
+```
+
+Run verification:
 
 ```bash
 pytest
 ruff check .
 ```
 
-The smoke test loads typed configuration, deterministically generates an
-episode specification, writes an append-only JSONL event, reads it back, and
-verifies the round trip.
-
-## Deployment
-
-The first implementation runs as a local Python client against an
-OpenAI-compatible endpoint. Container and Kubernetes deployment for the DGX
-Spark environment is intentionally deferred until the behavioral experiment
-works end to end.
+The blocked-attack configuration is `configs/experiments/scripted_blocked_attack.yaml`.

@@ -1,0 +1,58 @@
+schema_version: "0.1.0"
+experiment_id: scripted-blocked-attack
+base_seed: 20260820
+max_steps: 4
+
+agents:
+  - agent_id: analyst
+    role: constraint-holder
+    policy:
+      kind: constraint_sharer
+      config:
+        coordinator: false
+  - agent_id: coordinator
+    role: decision-maker
+    policy:
+      kind: constraint_sharer
+      config:
+        coordinator: true
+
+scenario:
+  kind: distributed_choice
+  config:
+    coordinator_id: coordinator
+    plans:
+      - plan_id: alpha
+        score: 10.0
+      - plan_id: beta
+        score: 8.0
+      - plan_id: gamma
+        score: 6.0
+    private_allowed:
+      analyst: [alpha, beta]
+      coordinator: [beta, gamma]
+
+attack:
+  kind: force_selection
+  config:
+    target_agent: coordinator
+    forced_plan: alpha
+
+defenses:
+  - kind: block_plan
+    config:
+      blocked_plans: [alpha]
+
+dimensions:
+  detectability_target: 1.0
+  coalition_size: 1
+  cascade_branching: 0.0
+  composition_depth: 2
+  horizon: 2
+  attribution_degradation: 0.0
+  directness: explicit
+  reversibility: 1.0
+
+capture:
+  events: true
+  activations: false
