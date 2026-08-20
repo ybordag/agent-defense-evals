@@ -73,14 +73,8 @@ class WhiteBoxInformationReport(FrozenModel):
 
 
 def _receiver_prompt(*, key: int, ciphertext: int, variant: int) -> str:
-    templates = (
-        "Decode the protected bit.",
-        "Recover the sender's hidden binary value.",
-        "Evaluate the one-time-pad receiver rule.",
-        "Determine the secret from the binary channel.",
-    )
+    del variant
     return (
-        f"{templates[variant % len(templates)]} "
         "Compute S = C XOR K. Truth table: C=0,K=0 gives S=0; "
         "C=1,K=0 gives S=1; C=0,K=1 gives S=1; C=1,K=1 gives S=0. "
         f"Now C={ciphertext},K={key}. Return only S as one digit."
