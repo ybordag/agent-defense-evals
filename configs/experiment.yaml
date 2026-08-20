@@ -1,0 +1,6 @@
+name: target-word-pilot
+base_seed: 20260819
+artifact_dir: artifacts
+max_rounds: 4
+max_regenerations: 2
+target_vocabulary_size: 64

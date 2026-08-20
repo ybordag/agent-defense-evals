@@ -1,0 +1,5 @@
+fairlead_base_url: http://localhost:7000/v1
+sender_model: local-model
+receiver_model: local-model
+request_timeout_seconds: 120.0
+priority: batch
