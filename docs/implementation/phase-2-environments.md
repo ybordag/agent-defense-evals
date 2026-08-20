@@ -4,14 +4,14 @@
 
 The local white-box runtime foundation is implemented and verified with a tiny randomly initialized causal model. CPU tests cover deterministic generation, token log probabilities, all-layer hidden states, selected-module capture, and downstream-logit changes under a zero activation patch. A separate unsandboxed test confirms generation and activation patching on the Apple M2 Metal GPU. No pretrained model weights have been downloaded.
 
-The remaining local integration task is connecting model-backed policies to the Phase 1 agent interface. The next environment task is inventorying and configuring the two-node DGX Spark cluster before adding vLLM or a 7–9B checkpoint.
+The runtime is also installed in an isolated environment on `spark-thor`. CUDA execution and an activation patch were verified on its NVIDIA GB10. A separate, already-running vLLM service passed an OpenAI-compatible generation smoke test. The remaining integration task is connecting model-backed policies to the Phase 1 agent interface before adding a 7–9B experimental checkpoint.
 
 ## Runtime decision
 
 Phase 2 uses two model runtimes behind one capability-aware interface:
 
 1. `TransformersWhiteBoxRuntime` is the primary runtime for causal experiments. It runs a Hugging Face causal language model directly through PyTorch and supports logits, hidden states, selected module outputs, and activation interventions.
-2. A later `VLLMRuntime` is the high-throughput behavioral runtime. It will support scalable generation and log probabilities, but is not the primary activation-patching path.
+2. A later `VLLMRuntime` adapter is the high-throughput behavioral runtime. A live vLLM server is available, but the project adapter has not yet been implemented. It will support scalable generation and log probabilities, but is not the primary activation-patching path.
 
 Runtime identity is an experimental variable. Results from different kernels or serving engines must not be treated as bitwise-equivalent even when they use the same checkpoint and sampling configuration.
 
@@ -40,7 +40,23 @@ The two-node NVIDIA DGX Spark cluster is the intended environment for:
 - homogeneous and heterogeneous multi-agent batches;
 - long-horizon and attack/defense parameter sweeps.
 
-Before cluster installation, capture:
+The following inventory is verified for `spark-thor`:
+
+- SSH alias: `spark-thor` over Tailscale;
+- OS: Ubuntu 24.04 on ARM64;
+- accelerator: one NVIDIA GB10, compute capability 12.1;
+- memory: approximately 119 GiB unified memory;
+- driver: 580.95.05;
+- CUDA toolkit: 13.0;
+- Python: 3.12.3;
+- repository clone: `/home/yashi/Code/agent-defense-evals`;
+- project environment: `/home/yashi/Code/agent-defense-evals/.venv`;
+- project PyTorch: 2.11.0+cu130 with CUDA available;
+- project Transformers: 5.15.1;
+- existing serving environment: `/home/yashi/venvs/fairlead-vllm-managed`;
+- existing server: vLLM 0.23.0 serving `Qwen/Qwen2.5-0.5B-Instruct` on port 8000.
+
+The second node still requires the same read-only inventory. Before multi-node execution, capture:
 
 - node hostnames and SSH aliases;
 - OS and architecture;
@@ -67,7 +83,45 @@ Before cluster installation, capture:
 
 `pyproject.toml` defines supported dependency ranges and optional groups. `requirements.txt` installs the complete local development environment. The exact environment used on the Apple Silicon development machine is recorded in `requirements/locks/macos-arm64-py312.txt` and should be supplied to pip as a constraints file.
 
-The DGX environment requires a separate lock because Linux/CUDA PyTorch and vLLM artifacts are not interchangeable with macOS ARM64 packages.
+The verified Thor environment is recorded in `requirements/locks/linux-arm64-cu130-py312.txt`. PyTorch must first be installed from the official CUDA 13 wheel index because the `+cu130` build is not available from the default Python package index:
+
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip setuptools wheel
+python -m pip install \
+  --index-url https://download.pytorch.org/whl/cu130 \
+  'torch==2.11.0+cu130'
+python -m pip install \
+  -c requirements/locks/linux-arm64-cu130-py312.txt \
+  -e '.[dev,local-model]'
+```
+
+Both the project environment and the known-good vLLM environment report `nvidia-cusparselt-cu13 0.8.0 is not supported on this platform` from `pip check`. Despite that metadata warning, CUDA tensor execution, the Transformers activation-patch smoke test, and vLLM generation all succeed. Preserve the warning in environment reports and re-evaluate it when the NVIDIA/PyTorch wheel set changes.
+
+## Deployment workflow
+
+GitHub is the source of truth. The Thor clone uses the public HTTPS remote and therefore needs no GitHub credential for read-only deployment.
+
+1. Verify, commit, and push changes from the development machine.
+2. On Thor, run `git -C /home/yashi/Code/agent-defense-evals pull --ff-only`.
+3. If dependency declarations changed, reinstall using the Linux/CUDA lock above.
+4. Run `.venv/bin/python -m pytest -q` and `.venv/bin/ruff check .`.
+5. Verify `torch.cuda.is_available()` and the recorded GPU identity.
+6. Verify the vLLM models endpoint before behavioral sweeps.
+
+Do not install the project into the managed vLLM environment. The project runtime and server remain separate so that white-box dependency changes cannot destabilize the serving process.
+
+## Verified Thor acceptance checks
+
+- clean clone at commit `ebdd009`;
+- 17 tests pass with the MPS-only test skipped;
+- Ruff passes;
+- CLI entry point runs;
+- CUDA reports an NVIDIA GB10 and completes a tensor operation;
+- a tiny direct Transformers model generates on CUDA;
+- a forward-hook zero patch is applied on CUDA;
+- the vLLM chat-completions endpoint returns a valid generation.
 
 ## Cluster connection gates
 

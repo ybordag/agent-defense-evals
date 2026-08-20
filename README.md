@@ -2,7 +2,7 @@
 
 An event-sourced evaluation harness for multi-agent AI security defenses across collusion, steganography, heterogeneous attacks, and the attack dimensions defined in Section 3.3 of the motivating research.
 
-The current implementation covers Phases 0 and 1: immutable specifications, deterministic traces, scripted agents, defense mediation, and provenance. Open-weight model execution begins in Phase 2.
+The current implementation covers Phases 0 and 1 plus the Phase 2 runtime foundation: immutable specifications, deterministic traces, scripted agents, defense mediation, provenance, and direct Transformers-based white-box generation and activation intervention. The runtime is verified on Apple Metal and an NVIDIA GB10/CUDA 13 host.
 
 ## Documentation
 
@@ -32,7 +32,21 @@ python -m pip install \
   -e '.[dev,local-model]'
 ```
 
-The DGX Linux/CUDA environment will use a separate lock file after cluster inventory.
+For the verified DGX Spark Linux ARM64/CUDA 13 environment, install the CUDA-enabled PyTorch wheel first and then apply the platform lock:
+
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip setuptools wheel
+python -m pip install \
+  --index-url https://download.pytorch.org/whl/cu130 \
+  'torch==2.11.0+cu130'
+python -m pip install \
+  -c requirements/locks/linux-arm64-cu130-py312.txt \
+  -e '.[dev,local-model]'
+```
+
+See the [Phase 2 environment plan](docs/implementation/phase-2-environments.md) for the Thor deployment workflow and vLLM boundary.
 
 ## Phase 0–1 commands
 

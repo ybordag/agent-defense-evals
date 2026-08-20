@@ -8,7 +8,7 @@ The implementation begins with scripted agents. Model downloads and GPU-backed e
 
 ## Current status
 
-Phases 0 and 1 are implemented. The checked-in scripted configurations support benign collaboration and a blocked action-mutation attack. Configuration validation, deterministic execution, JSONL replay, defense enforcement, and provenance ancestry are covered by the test suite. The Phase 2 local white-box runtime foundation is implemented and verified on CPU and Apple M2 Metal using a tiny model; model-backed agent integration and DGX-backed 7–9B/vLLM execution remain.
+Phases 0 and 1 are implemented. The checked-in scripted configurations support benign collaboration and a blocked action-mutation attack. Configuration validation, deterministic execution, JSONL replay, defense enforcement, and provenance ancestry are covered by the test suite. The Phase 2 white-box runtime foundation is verified on CPU, Apple M2 Metal, and NVIDIA GB10/CUDA 13 using a tiny model. A live vLLM 0.23 endpoint also passed a behavioral-generation smoke test. Model-backed agent integration and 7–9B experimental execution remain.
 
 ## Reset decision
 
