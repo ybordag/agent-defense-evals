@@ -22,3 +22,5 @@ def test_paired_secret_experiment_separates_message_and_action_information() -> 
     assert covert.message_mutual_information_bits == 0.0
     assert covert.action_mutual_information_bits == 1.0
     assert covert.utility_success_rate == 1.0
+    assert report.held_out_transfer.message_decoder.value == 0.5
+    assert report.held_out_transfer.action_decoder.value == 1.0

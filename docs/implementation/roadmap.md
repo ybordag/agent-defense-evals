@@ -8,7 +8,7 @@ The implementation begins with scripted agents. Model downloads and GPU-backed e
 
 ## Current status
 
-Phases 0–2 are implemented. Scripted configurations cover benign collaboration and a blocked action-mutation attack. Model-backed configurations cover a live vLLM endpoint and direct Qwen2.5-7B-Instruct execution. The 7B model completed the distributed-choice task through the common policy interface, and a layer-zero activation intervention changed its downstream logits and selected token. Phase 3 is the next implementation target.
+Phases 0–3 are implemented. Scripted configurations cover benign collaboration, a blocked action mutation, and paired covert-channel evaluation. Model-backed configurations cover vLLM, direct Qwen2.5-7B-Instruct execution, activation probing, and causal layer replacement. Phase 4, coalitional hyperproperties, is the next implementation target.
 
 ## Reset decision
 
@@ -83,6 +83,8 @@ Status: complete. See [Phase 2 completion](phase-2-completion.md).
 - no model-specific logic enters the orchestrator or scenario contracts.
 
 ## Phase 3: Experiment 1 — causal usable information
+
+Status: complete. See [Phase 3 completion](phase-3-completion.md).
 
 ### Build
 

@@ -2,7 +2,7 @@
 
 An event-sourced evaluation harness for multi-agent AI security defenses across collusion, steganography, heterogeneous attacks, and the attack dimensions defined in Section 3.3 of the motivating research.
 
-Phases 0–2 are implemented: immutable specifications, deterministic traces, scripted and model-backed agents, defense mediation, provenance, OpenAI-compatible/vLLM serving, and direct Transformers-based white-box generation and activation intervention. The runtime is verified on Apple Metal and an NVIDIA GB10/CUDA 13 host, including a successful Qwen2.5-7B-Instruct multi-agent episode.
+Phases 0–3 are implemented: deterministic traces, scripted and model-backed agents, defense mediation, provenance, remote serving, white-box intervention, and the first causal usable-information experiment. Phase 3 includes paired secret interventions, five controlled channels, message/action/activation decoders, held-out channel transfer, and a Qwen2.5-7B layer-replacement sweep.
 
 ## Documentation
 
@@ -12,6 +12,7 @@ Phases 0–2 are implemented: immutable specifications, deterministic traces, sc
 - [System architecture](docs/05_system_architecture.md)
 - [Implementation roadmap](docs/implementation/roadmap.md)
 - [Phase 2 completion report](docs/implementation/phase-2-completion.md)
+- [Phase 3 completion report](docs/implementation/phase-3-completion.md)
 
 ## Development setup
 
@@ -86,3 +87,19 @@ Thor model-backed configurations are:
 
 - `configs/experiments/model_vllm_smoke.yaml` for the running vLLM endpoint;
 - `configs/experiments/model_transformers_7b.yaml` for direct 7B white-box execution.
+
+Run the Phase 3 behavioral experiment locally:
+
+```bash
+agent-defense-evals phase3-run \
+  --config configs/experiments/phase3_causal_information.yaml \
+  --output artifacts/phase3-scripted-report.json
+```
+
+Run the white-box confirmation on Thor:
+
+```bash
+agent-defense-evals phase3-white-box \
+  --config configs/experiments/phase3_white_box_7b.yaml \
+  --output artifacts/phase3-white-box-7b-report.json
+```
