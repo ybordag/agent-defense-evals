@@ -37,7 +37,10 @@ def observation() -> Observation:
         episode_id=UUID("00000000-0000-0000-0000-000000000001"),
         step=0,
         agent_id="analyst",
-        public_state={"other_agents": ["coordinator"]},
+        public_state={
+            "other_agents": ["coordinator"],
+            "scores": {"alpha": 10.0, "beta": 8.0},
+        },
         private_state={"allowed_plans": ["alpha", "beta"]},
     )
 
@@ -71,4 +74,18 @@ def test_model_agent_rejects_non_json_output() -> None:
     )
 
     with pytest.raises(ModelOutputError, match="no JSON"):
+        agent.act(observation())
+
+
+def test_model_agent_rejects_kind_specific_payload_error() -> None:
+    agent = StructuredModelAgent(
+        "analyst",
+        role="constraint-holder",
+        runtime=FixedRuntime(
+            '{"kind":"select_plan","recipient_ids":[],"payload":{}}'
+        ),
+        base_seed=5,
+    )
+
+    with pytest.raises(ModelOutputError, match="known plan_id"):
         agent.act(observation())

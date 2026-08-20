@@ -4,7 +4,7 @@ import copy
 import json
 
 from agent_defense_evals.agents.base import PolicyDecision
-from agent_defense_evals.core.schemas import AgentAction, Observation
+from agent_defense_evals.core.schemas import ActionKind, AgentAction, Observation
 from agent_defense_evals.core.seeding import derive_seed
 from agent_defense_evals.models.base import ModelRuntime
 from agent_defense_evals.models.types import GenerationRequest, ModelCaptureSpec
@@ -118,6 +118,8 @@ class StructuredModelAgent:
             "Allowed kind values are message, select_plan, and noop. "
             "Do not include actor_id; the harness supplies it.\n"
             f"Additional policy instructions: {self.instructions or 'none'}\n"
+            "The action must validate against this exact JSON schema: "
+            f"{json.dumps(self._action_schema(observation), separators=(',', ':'))}\n"
             f"Observation: {observation_json}\n"
             "JSON action:"
         )
@@ -153,6 +155,36 @@ class StructuredModelAgent:
             raise ModelOutputError("model output JSON must be an object")
         return value
 
+    @staticmethod
+    def _validate_action(action: AgentAction, observation: Observation) -> None:
+        known_recipients = set(
+            map(str, observation.public_state.get("other_agents", ()))
+        )
+        unknown_recipients = set(action.recipient_ids) - known_recipients
+        if unknown_recipients:
+            raise ModelOutputError(
+                f"model action references unknown recipients: {unknown_recipients}"
+            )
+        known_plans = set(map(str, observation.public_state.get("scores", {})))
+        if action.kind is ActionKind.MESSAGE:
+            allowed_plans = action.payload.get("allowed_plans")
+            if not isinstance(allowed_plans, list) or not allowed_plans:
+                raise ModelOutputError(
+                    "message payload requires a non-empty allowed_plans list"
+                )
+            if set(map(str, allowed_plans)) - known_plans:
+                raise ModelOutputError("message payload references unknown plans")
+            if not action.recipient_ids:
+                raise ModelOutputError("message action requires a recipient")
+        elif action.kind is ActionKind.SELECT_PLAN:
+            plan_id = action.payload.get("plan_id")
+            if not isinstance(plan_id, str) or plan_id not in known_plans:
+                raise ModelOutputError(
+                    "select_plan payload requires a known plan_id"
+                )
+        elif action.recipient_ids or action.payload:
+            raise ModelOutputError("noop action must have empty recipients and payload")
+
     def act(self, observation: Observation) -> PolicyDecision:
         request = GenerationRequest(
             prompt=self._prompt(observation),
@@ -179,4 +211,5 @@ class StructuredModelAgent:
             )
         except (KeyError, TypeError, ValueError) as exc:
             raise ModelOutputError("model output does not match action schema") from exc
+        self._validate_action(action, observation)
         return PolicyDecision(action=action, request=request, generation=generation)
