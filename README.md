@@ -129,3 +129,15 @@ agent-defense-evals phase5-run \
   --config configs/experiments/phase5_anytime_evidence.yaml \
   --output artifacts/phase5-report.json
 ```
+
+Run the Phase 5 model-trace pilots on Thor:
+
+```bash
+agent-defense-evals phase5-model-run \
+  --config configs/experiments/phase5_model_trace_pilot.yaml \
+  --output artifacts/phase5-model-trace-report.json
+
+agent-defense-evals phase5-model-run \
+  --config configs/experiments/phase5_model_trace_7b_pilot.yaml \
+  --output artifacts/phase5-model-trace-7b-report.json
+```

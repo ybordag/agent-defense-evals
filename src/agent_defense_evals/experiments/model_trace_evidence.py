@@ -78,6 +78,7 @@ class ModelTraceEvidenceReport(FrozenModel):
     score_source_id: str
     calibration_score_mean: float = Field(ge=0.0, le=1.0)
     estimated_null_mean_upper: float = Field(gt=0.0, lt=1.0)
+    null_estimation_method: str
     null_estimation_delta: float
     conditional_validity_claimed: bool
     fixed_score_threshold: float
@@ -164,8 +165,14 @@ def _run_trace_stream(
         raise RuntimeError("model trace episode did not complete its full horizon")
     scorer = CoalitionSignalTraceScorer(("signal_sender", "signal_receiver"))
     scores = scorer.score(trace, horizon=spec.evidence.horizon)
+    expected_actors = {"signal_sender", "signal_receiver"}
     attributed = sum(
-        bool(score.sources and score.sources[0].event_ids) for score in scores
+        bool(
+            score.sources
+            and len(score.sources[0].event_ids) == len(expected_actors)
+            and set(score.sources[0].actor_ids) == expected_actors
+        )
+        for score in scores
     )
     generations = trace.by_kind(EventKind.MODEL_GENERATED)
     if not generations:
@@ -291,6 +298,7 @@ def run_model_trace_evidence(
         score_source_id=CoalitionSignalTraceScorer.scorer_id,
         calibration_score_mean=calibration_mean,
         estimated_null_mean_upper=estimated_upper,
+        null_estimation_method="one_sided_hoeffding_marginal_upper_bound",
         null_estimation_delta=spec.null_estimation_delta,
         conditional_validity_claimed=False,
         fixed_score_threshold=fixed_threshold,
