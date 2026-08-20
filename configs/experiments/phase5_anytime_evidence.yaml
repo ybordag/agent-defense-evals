@@ -1,0 +1,25 @@
+experiment_id: phase5-anytime-evidence
+base_seed: 20260820
+horizon: 256
+calibration_episodes: 400
+evaluation_episodes: 400
+alpha: 0.05
+null_mean_upper: 0.08
+base_rate: 0.025
+benign_drift_amplitude: 0.035
+unmodeled_shift_rate: 0.14
+attack_rate: 0.18
+onset_fraction: [0.20, 0.40]
+irreversible_delay: 112
+bet_fractions: [0.025, 0.05, 0.10, 0.20]
+cusum_reference_mean: 0.10
+
+dimensions:
+  detectability_target: 0.5
+  coalition_size: 2
+  cascade_branching: 1.0
+  composition_depth: 3
+  horizon: 256
+  attribution_degradation: 0.5
+  directness: reward_induced
+  reversibility: 0.0

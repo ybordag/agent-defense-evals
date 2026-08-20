@@ -23,6 +23,7 @@ The repository currently implements Phases 0–4: deterministic event history, s
 - [Phase 2 completion report](implementation/phase-2-completion.md) records the implementation, acceptance evidence, and remaining scope limits.
 - [Phase 3 completion report](implementation/phase-3-completion.md) records the paired-channel results, held-out transfer test, and 7B causal patch sweep.
 - [Phase 4 completion report](implementation/phase-4-completion.md) records the coalition, topology, provenance, irreversible-gate, and heterogeneous-model results.
+- [Phase 5 plan and first increment](implementation/phase-5-plan.md) records the sequential evidence design, controlled results, and open-model integration plan.
 
 ## Reading order
 

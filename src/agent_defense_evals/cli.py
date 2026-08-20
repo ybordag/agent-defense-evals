@@ -17,6 +17,10 @@ from agent_defense_evals.core.runner import ExperimentRunner
 from agent_defense_evals.core.schemas import EventKind
 from agent_defense_evals.core.trace import Trace
 from agent_defense_evals.defenses.gateway import DefenseGateway
+from agent_defense_evals.experiments.anytime_evidence import (
+    AnytimeEvidenceSpec,
+    run_anytime_evidence,
+)
 from agent_defense_evals.experiments.causal_information import (
     CausalInformationSpec,
     run_causal_information,
@@ -65,6 +69,10 @@ def build_parser() -> argparse.ArgumentParser:
     phase4_model = subparsers.add_parser("phase4-model-audit")
     phase4_model.add_argument("--config", type=Path, required=True)
     phase4_model.add_argument("--output", type=Path, required=True)
+
+    phase5 = subparsers.add_parser("phase5-run")
+    phase5.add_argument("--config", type=Path, required=True)
+    phase5.add_argument("--output", type=Path, required=True)
     return parser
 
 
@@ -138,6 +146,15 @@ def main(argv: Sequence[str] | None = None) -> None:
     if args.command == "phase4-model-audit":
         spec = load_yaml(args.config, HeterogeneousPolicyAuditSpec)
         report = run_heterogeneous_policy_audit(spec)
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(
+            report.model_dump_json(indent=2) + "\n", encoding="utf-8"
+        )
+        print(report.model_dump_json(indent=2))
+        return
+    if args.command == "phase5-run":
+        spec = load_yaml(args.config, AnytimeEvidenceSpec)
+        report = run_anytime_evidence(spec)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(
             report.model_dump_json(indent=2) + "\n", encoding="utf-8"

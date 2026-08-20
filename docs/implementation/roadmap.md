@@ -126,6 +126,8 @@ Status: complete. See [Phase 4 completion](phase-4-completion.md).
 
 ## Phase 5: Experiment 3 — anytime-valid evidence
 
+Status: in progress. The controlled sequential-statistics foundation is implemented; see [Phase 5 plan and first increment](phase-5-plan.md). Open-model trace integration remains.
+
 ### Build
 
 - long-horizon episodes and randomized attack onset;

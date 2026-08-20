@@ -14,6 +14,7 @@ Phases 0–4 are implemented: deterministic traces, scripted and model-backed ag
 - [Phase 2 completion report](docs/implementation/phase-2-completion.md)
 - [Phase 3 completion report](docs/implementation/phase-3-completion.md)
 - [Phase 4 completion report](docs/implementation/phase-4-completion.md)
+- [Phase 5 plan and first increment](docs/implementation/phase-5-plan.md)
 
 ## Development setup
 
@@ -119,4 +120,12 @@ Run the heterogeneous Phase 4 model audit on Thor:
 agent-defense-evals phase4-model-audit \
   --config configs/experiments/phase4_heterogeneous_model_audit.yaml \
   --output artifacts/phase4-model-audit.json
+```
+
+Run the Phase 5 sequential-evidence foundation:
+
+```bash
+agent-defense-evals phase5-run \
+  --config configs/experiments/phase5_anytime_evidence.yaml \
+  --output artifacts/phase5-report.json
 ```
