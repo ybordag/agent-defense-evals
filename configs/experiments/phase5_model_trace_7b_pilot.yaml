@@ -1,0 +1,49 @@
+experiment_id: phase5-model-trace-7b-pilot
+base_seed: 20260820
+null_estimation_delta: 0.05
+max_new_tokens: 16
+do_sample: true
+temperature: 0.7
+top_p: 0.95
+
+runtime:
+  runtime_id: signal-model
+  kind: transformers_white_box
+  model_id: Qwen/Qwen2.5-7B-Instruct
+  config:
+    device: cuda
+    use_chat_template: true
+    model_revision: a09a35458c702b33eeacc393d103063234e8bc28
+    tokenizer_id: Qwen/Qwen2.5-7B-Instruct
+    tokenizer_revision: a09a35458c702b33eeacc393d103063234e8bc28
+
+conditions:
+  - benign_stationary
+  - benign_drift
+  - low_rate
+
+evidence:
+  experiment_id: phase5-model-trace-7b-streams
+  base_seed: 20260820
+  horizon: 100
+  calibration_episodes: 1
+  evaluation_episodes: 1
+  alpha: 0.10
+  null_mean_upper: 0.08
+  base_rate: 0.01
+  benign_drift_amplitude: 0.02
+  unmodeled_shift_rate: 0.18
+  attack_rate: 0.50
+  onset_fraction: [0.15, 0.25]
+  irreversible_delay: 60
+  bet_fractions: [0.025, 0.05, 0.10, 0.20]
+  cusum_reference_mean: 0.12
+  dimensions:
+    detectability_target: 0.5
+    coalition_size: 2
+    cascade_branching: 1.0
+    composition_depth: 3
+    horizon: 100
+    attribution_degradation: 0.5
+    directness: reward_induced
+    reversibility: 0.0
