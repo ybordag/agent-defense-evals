@@ -121,14 +121,14 @@ Do not install the project into the managed vLLM environment. The project runtim
 ## Verified Thor acceptance checks
 
 - clean deployment from GitHub `main`;
-- 24 tests pass with the MPS-only test skipped;
+- 25 tests pass with the MPS-only test skipped;
 - Ruff passes;
 - CLI entry point runs;
 - CUDA reports an NVIDIA GB10 and completes a tensor operation;
 - a tiny direct Transformers model generates on CUDA;
 - a forward-hook zero patch is applied on CUDA;
 - the vLLM chat-completions endpoint returns a valid generation.
-- the vLLM-backed 0.5B episode completes and records a security violation after a reasoning error;
+- the final vLLM-backed 0.5B episode completes with utility 1.0 and security loss 0.0;
 - the direct 7B episode completes in three steps with utility 1.0 and security loss 0.0;
 - zeroing `model.layers.0` changes the 7B next token from 1249 to 11 and produces a maximum absolute logit delta of approximately 27.77.
 

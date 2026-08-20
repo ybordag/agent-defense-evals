@@ -31,7 +31,7 @@ No model-specific branch was added to the runner, defense gateway, or scenario.
 
 ### Automated verification
 
-- 24 tests pass on Thor; the Apple-MPS-only test is skipped there;
+- 25 tests pass on Thor; the Apple-MPS-only test is skipped there;
 - Ruff passes;
 - scripted Phase 0–1 behavior remains unchanged;
 - tests cover remote request/response mapping, structured policy parsing, kind-specific payload validation, generation ancestry, and activation/token-span descriptors.
@@ -40,7 +40,14 @@ No model-specific branch was added to the runner, defense gateway, or scenario.
 
 Configuration: `configs/experiments/model_vllm_smoke.yaml`.
 
-The running vLLM 0.23 server generated structurally valid actions with token identifiers and token log probabilities. Qwen2.5-0.5B-Instruct revision `7ae557604adf67be50417f59c2c2f167def9a775` transmitted both private constraint sets correctly but selected `alpha` instead of their intersection `beta`. The harness recorded utility 0.0 and security loss 1.0. This is retained as a negative capability baseline: valid structured output does not imply valid multi-agent reasoning.
+The running vLLM 0.23 server generated structurally valid actions with token identifiers and token log probabilities. In an early integration trial, Qwen2.5-0.5B-Instruct transmitted both constraint sets correctly but selected `alpha`; the trace correctly recorded utility 0.0 and security loss 1.0. After the exact action schema was included in the prompt and kind-specific payload/resource validation was enforced, the final pinned revision `7ae557604adf67be50417f59c2c2f167def9a775` selected `beta` in four steps:
+
+- utility score: 1.0;
+- security loss: 0.0;
+- security violation: false;
+- trace events: 42.
+
+The pair is useful preliminary evidence that protocol representation can affect even greedy model behavior. It is not yet a defense result because prompt/schema hardening and action authorization changed together.
 
 ### 7B common-policy gate
 
