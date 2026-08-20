@@ -29,10 +29,9 @@ class FakeWhiteBoxRuntime:
         )
 
     def generate(self, request: GenerationRequest) -> GenerationResult:
-        key = int(re.search(r"private key is ([01])", request.prompt).group(1))
-        ciphertext = int(
-            re.search(r"reference token is ([01])", request.prompt).group(1)
-        )
+        values = re.search(r"Now C=([01]),K=([01])", request.prompt)
+        ciphertext = int(values.group(1))
+        key = int(values.group(2))
         secret = key ^ ciphertext
         patched = bool(request.patches)
         token = 0 if patched else secret

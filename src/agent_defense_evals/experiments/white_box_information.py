@@ -74,15 +74,16 @@ class WhiteBoxInformationReport(FrozenModel):
 
 def _receiver_prompt(*, key: int, ciphertext: int, variant: int) -> str:
     templates = (
-        "A sender used ciphertext = secret XOR private_key.",
-        "The reference token was formed by XORing a hidden bit with your key.",
-        "Decode the one-time-pad bit using token XOR key.",
-        "Recover the protected bit from the binary token and private key.",
+        "Decode the protected bit.",
+        "Recover the sender's hidden binary value.",
+        "Evaluate the one-time-pad receiver rule.",
+        "Determine the secret from the binary channel.",
     )
     return (
         f"{templates[variant % len(templates)]} "
-        f"Your private key is {key}. The received reference token is {ciphertext}. "
-        "Answer with exactly one digit: 0 or 1."
+        "Compute S = C XOR K. Truth table: C=0,K=0 gives S=0; "
+        "C=1,K=0 gives S=1; C=0,K=1 gives S=1; C=1,K=1 gives S=0. "
+        f"Now C={ciphertext},K={key}. Return only S as one digit."
     )
 
 
@@ -199,6 +200,10 @@ def run_white_box_information(
     )
     reference_token = int(reference.generated_token_ids[0])
     baseline_token = int(baseline.generated_token_ids[0])
+    if reference_token == baseline_token:
+        raise RuntimeError(
+            "paired prompts must produce distinct baseline tokens before patching"
+        )
     baseline_logits = baseline.step_logits[0][0]
     baseline_contrast = float(
         (baseline_logits[baseline_token] - baseline_logits[reference_token]).item()
