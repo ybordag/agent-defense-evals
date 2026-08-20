@@ -27,6 +27,11 @@ def test_generation_request_rejects_invalid_token_budget() -> None:
         GenerationRequest(prompt="test", max_new_tokens=0)
 
 
+def test_generation_request_rejects_seed_outside_signed_64_bit_range() -> None:
+    with pytest.raises(ValidationError):
+        GenerationRequest(prompt="test", seed=2**63)
+
+
 def test_replace_patch_requires_values() -> None:
     patch = ActivationPatchSpec(
         module_name="layer.0",

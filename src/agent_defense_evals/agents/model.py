@@ -196,7 +196,8 @@ class StructuredModelAgent:
                 self.base_seed,
                 f"model-policy:{self.agent_id}",
                 observation.step,
-            ),
+            )
+            % (2**63),
             capture=self.capture,
             response_schema=self._action_schema(observation),
         )

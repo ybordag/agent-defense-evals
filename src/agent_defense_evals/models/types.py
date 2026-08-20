@@ -75,7 +75,7 @@ class GenerationRequest(FrozenModel):
     do_sample: bool = False
     temperature: float = Field(default=1.0, gt=0.0)
     top_p: float = Field(default=1.0, gt=0.0, le=1.0)
-    seed: int = Field(default=0, ge=0)
+    seed: int = Field(default=0, ge=0, le=2**63 - 1)
     stop: tuple[str, ...] = ()
     response_schema: dict[str, Any] | None = None
     capture: ModelCaptureSpec = ModelCaptureSpec()
