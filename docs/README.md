@@ -4,7 +4,7 @@
 
 This documentation describes an open-weight evaluation harness for multi-agent security. It connects a broad research program—collusion, steganography, heterogeneous attacks, provenance, and containment—to a concrete first implementation.
 
-The repository currently implements Phases 0 and 1: immutable specifications, deterministic event history, scripted multi-agent orchestration, defense mediation, and provenance. The first model-backed causal-information experiment begins after these foundations are stable.
+The repository currently implements Phases 0–2: deterministic event history, scripted and model-backed multi-agent orchestration, defense mediation, provenance, high-throughput remote serving, and direct white-box activation intervention. Phase 3 begins the first defense-conjecture experiment.
 
 ## Research program
 
@@ -20,6 +20,7 @@ The repository currently implements Phases 0 and 1: immutable specifications, de
 
 - [Implementation roadmap](implementation/roadmap.md) defines the repository reset, staged architecture, experiment order, and acceptance gates.
 - [Phase 2 runtime and environment plan](implementation/phase-2-environments.md) defines the local white-box path and DGX cluster boundary.
+- [Phase 2 completion report](implementation/phase-2-completion.md) records the implementation, acceptance evidence, and remaining scope limits.
 
 ## Reading order
 

@@ -10,6 +10,9 @@ runtimes:
     config:
       base_url: http://127.0.0.1:8000/v1
       api_mode: chat
+      model_revision: 7ae557604adf67be50417f59c2c2f167def9a775
+      tokenizer_id: Qwen/Qwen2.5-0.5B-Instruct
+      tokenizer_revision: 7ae557604adf67be50417f59c2c2f167def9a775
       timeout: 60
 
 agents:

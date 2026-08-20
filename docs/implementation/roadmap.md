@@ -8,7 +8,7 @@ The implementation begins with scripted agents. Model downloads and GPU-backed e
 
 ## Current status
 
-Phases 0 and 1 are implemented. The checked-in scripted configurations support benign collaboration and a blocked action-mutation attack. Configuration validation, deterministic execution, JSONL replay, defense enforcement, and provenance ancestry are covered by the test suite. The Phase 2 white-box runtime foundation is verified on CPU, Apple M2 Metal, and NVIDIA GB10/CUDA 13 using a tiny model. A live vLLM 0.23 endpoint also passed a behavioral-generation smoke test. Model-backed agent integration and 7–9B experimental execution remain.
+Phases 0–2 are implemented. Scripted configurations cover benign collaboration and a blocked action-mutation attack. Model-backed configurations cover a live vLLM endpoint and direct Qwen2.5-7B-Instruct execution. The 7B model completed the distributed-choice task through the common policy interface, and a layer-zero activation intervention changed its downstream logits and selected token. Phase 3 is the next implementation target.
 
 ## Reset decision
 
@@ -62,6 +62,8 @@ The prior `agent_interaction_evals` implementation and target-word experiment ar
 - deterministic runs with identical seeds produce equivalent traces.
 
 ## Phase 2: open-weight model runtime
+
+Status: complete. See [Phase 2 completion](phase-2-completion.md).
 
 ### Build
 

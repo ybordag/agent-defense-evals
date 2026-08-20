@@ -2,7 +2,7 @@
 
 An event-sourced evaluation harness for multi-agent AI security defenses across collusion, steganography, heterogeneous attacks, and the attack dimensions defined in Section 3.3 of the motivating research.
 
-The current implementation covers Phases 0 and 1 plus the Phase 2 runtime foundation: immutable specifications, deterministic traces, scripted agents, defense mediation, provenance, and direct Transformers-based white-box generation and activation intervention. The runtime is verified on Apple Metal and an NVIDIA GB10/CUDA 13 host.
+Phases 0–2 are implemented: immutable specifications, deterministic traces, scripted and model-backed agents, defense mediation, provenance, OpenAI-compatible/vLLM serving, and direct Transformers-based white-box generation and activation intervention. The runtime is verified on Apple Metal and an NVIDIA GB10/CUDA 13 host, including a successful Qwen2.5-7B-Instruct multi-agent episode.
 
 ## Documentation
 
@@ -11,6 +11,7 @@ The current implementation covers Phases 0 and 1 plus the Phase 2 runtime founda
 - [Experimental program](docs/04_experimental_program_and_transfer.md)
 - [System architecture](docs/05_system_architecture.md)
 - [Implementation roadmap](docs/implementation/roadmap.md)
+- [Phase 2 completion report](docs/implementation/phase-2-completion.md)
 
 ## Development setup
 
@@ -48,7 +49,7 @@ python -m pip install \
 
 See the [Phase 2 environment plan](docs/implementation/phase-2-environments.md) for the Thor deployment workflow and vLLM boundary.
 
-## Phase 0–1 commands
+## Core commands
 
 Validate the benign scripted configuration:
 
@@ -80,3 +81,8 @@ ruff check .
 ```
 
 The blocked-attack configuration is `configs/experiments/scripted_blocked_attack.yaml`.
+
+Thor model-backed configurations are:
+
+- `configs/experiments/model_vllm_smoke.yaml` for the running vLLM endpoint;
+- `configs/experiments/model_transformers_7b.yaml` for direct 7B white-box execution.

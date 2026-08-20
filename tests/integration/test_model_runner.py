@@ -53,8 +53,15 @@ class RuleRuntime:
             prompt_token_ids=(1, 2, 3),
             generated_token_ids=(4, 5),
             token_logprobs=(-0.1, -0.2),
+            module_outputs={"layer.0": (TensorDescriptor((1, 3, 4)),)},
             identity=ModelIdentity(runtime="rule", model_id="rule-model"),
         )
+
+
+class TensorDescriptor:
+    def __init__(self, shape: tuple[int, ...]) -> None:
+        self.shape = shape
+        self.dtype = "float32"
 
 
 def test_model_generation_is_a_parent_of_proposed_action() -> None:
@@ -93,3 +100,12 @@ def test_model_generation_is_a_parent_of_proposed_action() -> None:
         "start": 3,
         "end": 5,
     }
+    assert generated[0].payload["capture"]["module_outputs"] == [
+        {
+            "module_name": "layer.0",
+            "call_index": 0,
+            "shape": (1, 3, 4),
+            "dtype": "float32",
+            "token_span": {"start": 0, "end": 3},
+        }
+    ]

@@ -2,16 +2,16 @@
 
 ## Current status
 
-The local white-box runtime foundation is implemented and verified with a tiny randomly initialized causal model. CPU tests cover deterministic generation, token log probabilities, all-layer hidden states, selected-module capture, and downstream-logit changes under a zero activation patch. A separate unsandboxed test confirms generation and activation patching on the Apple M2 Metal GPU. No pretrained model weights have been downloaded.
+The white-box runtime is implemented and verified with both tiny random models and Qwen2.5-7B-Instruct. CPU tests cover deterministic generation, token log probabilities, all-layer hidden states, selected-module capture, and downstream-logit changes under a zero activation patch. A separate unsandboxed test confirms generation and activation patching on the Apple M2 Metal GPU.
 
-The runtime is also installed in an isolated environment on `spark-thor`. CUDA execution and an activation patch were verified on its NVIDIA GB10. A separate, already-running vLLM service passed an OpenAI-compatible generation smoke test. The remaining integration task is connecting model-backed policies to the Phase 1 agent interface before adding a 7–9B experimental checkpoint.
+The runtime is installed in an isolated environment on `spark-thor`. The common model policy, OpenAI-compatible adapter, vLLM structured generation, 7B direct execution, generation provenance, and CUDA activation patching are verified. Phase 2 is complete.
 
 ## Runtime decision
 
 Phase 2 uses two model runtimes behind one capability-aware interface:
 
 1. `TransformersWhiteBoxRuntime` is the primary runtime for causal experiments. It runs a Hugging Face causal language model directly through PyTorch and supports logits, hidden states, selected module outputs, and activation interventions.
-2. A later `VLLMRuntime` adapter is the high-throughput behavioral runtime. A live vLLM server is available, but the project adapter has not yet been implemented. It will support scalable generation and log probabilities, but is not the primary activation-patching path.
+2. `OpenAICompatibleRuntime` is the high-throughput behavioral runtime tested against vLLM 0.23. It supports chat or text completions, token log probabilities, returned token identifiers, usage-derived token counts, structured JSON output, and remote model provenance. It is not the activation-patching path.
 
 Runtime identity is an experimental variable. Results from different kernels or serving engines must not be treated as bitwise-equivalent even when they use the same checkpoint and sampling configuration.
 
@@ -55,6 +55,7 @@ The following inventory is verified for `spark-thor`:
 - project Transformers: 5.15.1;
 - existing serving environment: `/home/yashi/venvs/fairlead-vllm-managed`;
 - existing server: vLLM 0.23.0 serving `Qwen/Qwen2.5-0.5B-Instruct` on port 8000.
+- cached acceptance checkpoint: `Qwen/Qwen2.5-7B-Instruct`, revision `a09a35458c702b33eeacc393d103063234e8bc28`.
 
 The second node still requires the same read-only inventory. Before multi-node execution, capture:
 
@@ -67,7 +68,7 @@ The second node still requires the same read-only inventory. Before multi-node e
 - scheduler or process-management constraints;
 - model-cache location and Hugging Face credentials policy.
 
-## Local Phase 2 acceptance gates
+## Phase 2 acceptance gates
 
 - optional ML imports do not affect Phase 0–1 installations;
 - runtime capabilities are explicit and serializable;
@@ -78,6 +79,11 @@ The second node still requires the same read-only inventory. Before multi-node e
 - a zero or replacement patch changes downstream logits;
 - hooks are removed after every request, including failed requests;
 - existing Phase 0–1 tests continue to pass without model downloads.
+- model-derived actions traverse the existing attack, defense, and scenario boundaries;
+- model and sampling provenance is recorded in `model_generated` events;
+- capture descriptors carry exact prompt/completion or forward-pass token spans;
+- the 7B acceptance episode selects the jointly feasible optimal plan;
+- a 7B layer intervention changes downstream logits and the selected token.
 
 ## Dependency reproduction
 
@@ -114,14 +120,17 @@ Do not install the project into the managed vLLM environment. The project runtim
 
 ## Verified Thor acceptance checks
 
-- clean clone at commit `ebdd009`;
-- 17 tests pass with the MPS-only test skipped;
+- clean deployment from GitHub `main`;
+- 24 tests pass with the MPS-only test skipped;
 - Ruff passes;
 - CLI entry point runs;
 - CUDA reports an NVIDIA GB10 and completes a tensor operation;
 - a tiny direct Transformers model generates on CUDA;
 - a forward-hook zero patch is applied on CUDA;
 - the vLLM chat-completions endpoint returns a valid generation.
+- the vLLM-backed 0.5B episode completes and records a security violation after a reasoning error;
+- the direct 7B episode completes in three steps with utility 1.0 and security loss 0.0;
+- zeroing `model.layers.0` changes the 7B next token from 1249 to 11 and produces a maximum absolute logit delta of approximately 27.77.
 
 ## Cluster connection gates
 

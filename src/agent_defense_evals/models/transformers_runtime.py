@@ -95,6 +95,9 @@ class TransformersWhiteBoxRuntime:
         )
         model_revision = getattr(model.config, "_commit_hash", None) or revision
         tokenizer_commit = getattr(tokenizer, "init_kwargs", {}).get("_commit_hash")
+        recorded_tokenizer_revision = tokenizer_commit or resolved_tokenizer_revision
+        if recorded_tokenizer_revision is None and resolved_tokenizer_id == model_id:
+            recorded_tokenizer_revision = model_revision
         return cls(
             model,
             tokenizer,
@@ -104,7 +107,7 @@ class TransformersWhiteBoxRuntime:
                 model_id=model_id,
                 model_revision=model_revision,
                 tokenizer_id=resolved_tokenizer_id,
-                tokenizer_revision=tokenizer_commit or resolved_tokenizer_revision,
+                tokenizer_revision=recorded_tokenizer_revision,
                 adapter_id=adapter_id,
                 adapter_revision=adapter_revision,
             ),
