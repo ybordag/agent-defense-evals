@@ -22,6 +22,7 @@ from agent_defense_evals.core.seeding import (
 )
 from agent_defense_evals.core.trace import Trace
 from agent_defense_evals.defenses.gateway import DefenseGateway
+from agent_defense_evals.models.types import generation_event_payload
 from agent_defense_evals.scenarios.base import Scenario
 
 
@@ -126,13 +127,30 @@ class ExperimentRunner:
                     parent_ids=frontier,
                     payload={"observation": observation.model_dump(mode="json")},
                 )
-                action = agent.act(observation)
+                policy_decision = agent.act(observation)
+                action_parent = observed.event_id
+                if policy_decision.generation is not None:
+                    if policy_decision.request is None:
+                        raise RuntimeError("model generation is missing its request")
+                    generated = recorder.record(
+                        EventKind.MODEL_GENERATED,
+                        step=step,
+                        actor_id=agent.agent_id,
+                        recipient_ids=(agent.agent_id,),
+                        parent_ids=(observed.event_id,),
+                        payload=generation_event_payload(
+                            policy_decision.request,
+                            policy_decision.generation,
+                        ),
+                    )
+                    action_parent = generated.event_id
+                action = policy_decision.action
                 proposed = recorder.record(
                     EventKind.ACTION_PROPOSED,
                     step=step,
                     actor_id=agent.agent_id,
                     recipient_ids=action.recipient_ids,
-                    parent_ids=(observed.event_id,),
+                    parent_ids=(action_parent,),
                     payload={"action": action.model_dump(mode="json")},
                 )
                 proposals.append((action, proposed))

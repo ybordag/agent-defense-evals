@@ -6,6 +6,7 @@ from agent_defense_evals.models.types import (
     GenerationRequest,
     PatchMode,
     RuntimeCapabilities,
+    TokenSpan,
 )
 
 
@@ -34,3 +35,8 @@ def test_replace_patch_requires_values() -> None:
 
     with pytest.raises(ValueError, match="replacement values"):
         patch.replacement_required()
+
+
+def test_token_span_rejects_reverse_order() -> None:
+    with pytest.raises(ValidationError):
+        TokenSpan(start=3, end=2)

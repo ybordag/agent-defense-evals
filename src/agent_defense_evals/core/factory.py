@@ -1,12 +1,19 @@
-"""Small explicit component registry for the initial vertical slice."""
+"""Explicit component registry for scripted and model-backed experiments."""
+
+from collections.abc import Mapping
 
 from agent_defense_evals.agents.base import AgentPolicy
+from agent_defense_evals.agents.model import StructuredModelAgent
 from agent_defense_evals.agents.scripted import ConstraintSharingAgent
 from agent_defense_evals.attacks.base import AttackStrategy
 from agent_defense_evals.attacks.scripted import ForceSelectionAttack, NoAttack
 from agent_defense_evals.core.schemas import ExperimentSpec
 from agent_defense_evals.defenses.base import Defense
 from agent_defense_evals.defenses.scripted import BlockPlanDefense, RewritePlanDefense
+from agent_defense_evals.models.base import ModelRuntime
+from agent_defense_evals.models.openai_runtime import OpenAICompatibleRuntime
+from agent_defense_evals.models.transformers_runtime import TransformersWhiteBoxRuntime
+from agent_defense_evals.models.types import ModelCaptureSpec
 from agent_defense_evals.scenarios.base import Scenario
 from agent_defense_evals.scenarios.distributed_choice import DistributedChoiceScenario
 
@@ -17,17 +24,83 @@ def build_scenario(spec: ExperimentSpec) -> Scenario:
     raise ValueError(f"unknown scenario kind: {spec.scenario.kind}")
 
 
-def build_agents(spec: ExperimentSpec) -> tuple[AgentPolicy, ...]:
-    agents: list[AgentPolicy] = []
-    for agent in spec.agents:
-        if agent.policy.kind != "constraint_sharer":
-            raise ValueError(f"unknown policy kind: {agent.policy.kind}")
-        agents.append(
-            ConstraintSharingAgent(
-                agent.agent_id,
-                coordinator=bool(agent.policy.config.get("coordinator", False)),
+def build_model_runtimes(spec: ExperimentSpec) -> dict[str, ModelRuntime]:
+    runtimes: dict[str, ModelRuntime] = {}
+    for runtime_spec in spec.runtimes:
+        config = runtime_spec.config
+        if runtime_spec.kind == "openai_compatible":
+            runtimes[runtime_spec.runtime_id] = OpenAICompatibleRuntime(
+                base_url=str(config["base_url"]),
+                model_id=runtime_spec.model_id,
+                model_revision=config.get("model_revision"),
+                tokenizer_id=config.get("tokenizer_id"),
+                tokenizer_revision=config.get("tokenizer_revision"),
+                adapter_id=config.get("adapter_id"),
+                adapter_revision=config.get("adapter_revision"),
+                api_key_env=config.get("api_key_env"),
+                api_mode=str(config.get("api_mode", "chat")),
+                timeout=float(config.get("timeout", 60.0)),
             )
-        )
+            continue
+        if runtime_spec.kind == "transformers_white_box":
+            runtimes[runtime_spec.runtime_id] = (
+                TransformersWhiteBoxRuntime.from_pretrained(
+                    runtime_spec.model_id,
+                    device=config.get("device"),
+                    revision=config.get("model_revision"),
+                    tokenizer_id=config.get("tokenizer_id"),
+                    tokenizer_revision=config.get("tokenizer_revision"),
+                    adapter_id=config.get("adapter_id"),
+                    adapter_revision=config.get("adapter_revision"),
+                    use_chat_template=bool(config.get("use_chat_template", True)),
+                    trust_remote_code=bool(config.get("trust_remote_code", False)),
+                )
+            )
+            continue
+        raise ValueError(f"unknown model runtime kind: {runtime_spec.kind}")
+    return runtimes
+
+
+def build_agents(
+    spec: ExperimentSpec,
+    runtimes: Mapping[str, ModelRuntime] | None = None,
+) -> tuple[AgentPolicy, ...]:
+    agents: list[AgentPolicy] = []
+    runtime_map = dict(runtimes or {})
+    for agent in spec.agents:
+        if agent.policy.kind == "constraint_sharer":
+            agents.append(
+                ConstraintSharingAgent(
+                    agent.agent_id,
+                    coordinator=bool(
+                        agent.policy.config.get("coordinator", False)
+                    ),
+                )
+            )
+            continue
+        if agent.policy.kind == "model_action":
+            if not runtime_map:
+                runtime_map = build_model_runtimes(spec)
+            config = agent.policy.config
+            runtime_id = str(config["runtime_id"])
+            agents.append(
+                StructuredModelAgent(
+                    agent.agent_id,
+                    role=agent.role,
+                    runtime=runtime_map[runtime_id],
+                    base_seed=spec.base_seed,
+                    instructions=str(config.get("instructions", "")),
+                    max_new_tokens=int(config.get("max_new_tokens", 128)),
+                    do_sample=bool(config.get("do_sample", False)),
+                    temperature=float(config.get("temperature", 1.0)),
+                    top_p=float(config.get("top_p", 1.0)),
+                    capture=ModelCaptureSpec.model_validate(
+                        config.get("capture", {"logits": False})
+                    ),
+                )
+            )
+            continue
+        raise ValueError(f"unknown policy kind: {agent.policy.kind}")
     return tuple(agents)
 
 

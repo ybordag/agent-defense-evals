@@ -9,6 +9,7 @@ from agent_defense_evals.models.types import (
     ActivationPatchSpec,
     GenerationRequest,
     GenerationResult,
+    ModelIdentity,
     PatchMode,
     RuntimeCapabilities,
 )
@@ -36,13 +37,25 @@ class TransformersWhiteBoxRuntime:
         tokenizer: Any,
         *,
         device: str | None = None,
+        identity: ModelIdentity | None = None,
+        use_chat_template: bool = False,
     ) -> None:
         torch_module = _require_torch()
         self.model = model
         self.tokenizer = tokenizer
         self.device = device or (
-            "mps" if torch_module.backends.mps.is_available() else "cpu"
+            "cuda"
+            if torch_module.cuda.is_available()
+            else "mps"
+            if torch_module.backends.mps.is_available()
+            else "cpu"
         )
+        self.identity = identity or ModelIdentity(
+            runtime=type(self).__name__,
+            model_id=type(model).__name__,
+            tokenizer_id=type(tokenizer).__name__,
+        )
+        self.use_chat_template = use_chat_template
         self.model.to(self.device)
         self.model.eval()
 
@@ -53,6 +66,11 @@ class TransformersWhiteBoxRuntime:
         *,
         device: str | None = None,
         revision: str | None = None,
+        tokenizer_id: str | None = None,
+        tokenizer_revision: str | None = None,
+        adapter_id: str | None = None,
+        adapter_revision: str | None = None,
+        use_chat_template: bool = True,
         trust_remote_code: bool = False,
     ) -> "TransformersWhiteBoxRuntime":
         _require_torch()
@@ -62,9 +80,11 @@ class TransformersWhiteBoxRuntime:
             raise RuntimeError(
                 "TransformersWhiteBoxRuntime requires the 'local-model' extra"
             ) from exc
+        resolved_tokenizer_id = tokenizer_id or model_id
+        resolved_tokenizer_revision = tokenizer_revision or revision
         tokenizer = AutoTokenizer.from_pretrained(
-            model_id,
-            revision=revision,
+            resolved_tokenizer_id,
+            revision=resolved_tokenizer_revision,
             trust_remote_code=trust_remote_code,
         )
         model = AutoModelForCausalLM.from_pretrained(
@@ -73,7 +93,23 @@ class TransformersWhiteBoxRuntime:
             trust_remote_code=trust_remote_code,
             torch_dtype="auto",
         )
-        return cls(model, tokenizer, device=device)
+        model_revision = getattr(model.config, "_commit_hash", None) or revision
+        tokenizer_commit = getattr(tokenizer, "init_kwargs", {}).get("_commit_hash")
+        return cls(
+            model,
+            tokenizer,
+            device=device,
+            identity=ModelIdentity(
+                runtime=cls.__name__,
+                model_id=model_id,
+                model_revision=model_revision,
+                tokenizer_id=resolved_tokenizer_id,
+                tokenizer_revision=tokenizer_commit or resolved_tokenizer_revision,
+                adapter_id=adapter_id,
+                adapter_revision=adapter_revision,
+            ),
+            use_chat_template=use_chat_template,
+        )
 
     @property
     def capabilities(self) -> RuntimeCapabilities:
@@ -155,7 +191,17 @@ class TransformersWhiteBoxRuntime:
     def generate(self, request: GenerationRequest) -> GenerationResult:
         torch_module = _require_torch()
         self._validate_request(request)
-        encoded = self.tokenizer(request.prompt, return_tensors="pt")
+        if self.use_chat_template:
+            if not hasattr(self.tokenizer, "apply_chat_template"):
+                raise RuntimeError("tokenizer does not provide a chat template")
+            encoded = self.tokenizer.apply_chat_template(
+                [{"role": "user", "content": request.prompt}],
+                add_generation_prompt=True,
+                return_tensors="pt",
+                return_dict=True,
+            )
+        else:
+            encoded = self.tokenizer(request.prompt, return_tensors="pt")
         model_inputs = {
             key: value.to(self.device)
             for key, value in encoded.items()
@@ -172,6 +218,8 @@ class TransformersWhiteBoxRuntime:
         hooked_modules = set(request.capture.module_names) | set(patches_by_module)
 
         torch_module.manual_seed(request.seed)
+        if self.device.startswith("cuda"):
+            torch_module.cuda.manual_seed_all(request.seed)
         if self.device == "mps":
             torch_module.mps.manual_seed(request.seed)
 
@@ -201,6 +249,7 @@ class TransformersWhiteBoxRuntime:
                 generation_kwargs["eos_token_id"] = eos_token_id
             if request.do_sample:
                 generation_kwargs["temperature"] = request.temperature
+                generation_kwargs["top_p"] = request.top_p
 
             with torch_module.inference_mode():
                 output = self.model.generate(**model_inputs, **generation_kwargs)
@@ -230,6 +279,7 @@ class TransformersWhiteBoxRuntime:
             module_outputs={
                 name: tuple(values) for name, values in captured.items()
             },
+            identity=self.identity,
             metadata={
                 "runtime": type(self).__name__,
                 "model_class": type(self.model).__name__,

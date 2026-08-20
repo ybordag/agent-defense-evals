@@ -31,6 +31,7 @@ class ActionKind(StrEnum):
 class EventKind(StrEnum):
     EPISODE_STARTED = "episode_started"
     OBSERVATION_EMITTED = "observation_emitted"
+    MODEL_GENERATED = "model_generated"
     ACTION_PROPOSED = "action_proposed"
     ATTACK_MUTATED = "attack_mutated"
     DEFENSE_DECIDED = "defense_decided"
@@ -69,6 +70,13 @@ class AgentSpec(FrozenModel):
     policy: ComponentSpec
 
 
+class ModelRuntimeSpec(FrozenModel):
+    runtime_id: str = Field(min_length=1)
+    kind: str = Field(min_length=1)
+    model_id: str = Field(min_length=1)
+    config: dict[str, Any] = Field(default_factory=dict)
+
+
 class CaptureSpec(FrozenModel):
     events: bool = True
     activations: bool = False
@@ -80,6 +88,7 @@ class ExperimentSpec(FrozenModel):
     base_seed: int = Field(ge=0)
     max_steps: int = Field(default=10, ge=1, le=10_000)
     agents: tuple[AgentSpec, ...] = Field(min_length=2)
+    runtimes: tuple[ModelRuntimeSpec, ...] = ()
     scenario: ComponentSpec
     attack: ComponentSpec = ComponentSpec(kind="none")
     defenses: tuple[ComponentSpec, ...] = ()
@@ -91,6 +100,18 @@ class ExperimentSpec(FrozenModel):
         agent_ids = [agent.agent_id for agent in self.agents]
         if len(agent_ids) != len(set(agent_ids)):
             raise ValueError("agent IDs must be unique")
+        runtime_ids = [runtime.runtime_id for runtime in self.runtimes]
+        if len(runtime_ids) != len(set(runtime_ids)):
+            raise ValueError("runtime IDs must be unique")
+        configured_runtimes = set(runtime_ids)
+        for agent in self.agents:
+            if agent.policy.kind != "model_action":
+                continue
+            runtime_id = agent.policy.config.get("runtime_id")
+            if runtime_id not in configured_runtimes:
+                raise ValueError(
+                    f"agent {agent.agent_id} references unknown runtime: {runtime_id}"
+                )
         return self
 
 
