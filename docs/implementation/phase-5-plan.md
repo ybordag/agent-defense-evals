@@ -1,12 +1,14 @@
-# Phase 5 Implementation Progress
+# Phase 5 Completion Report
 
 ## Status
 
-Phase 5 is in progress. The sequential-statistics core, trace-derived score adapter,
-and confirmatory execution framework are implemented. Preliminary
-Qwen2.5-0.5B and Qwen2.5-7B pilots ran on Thor. All 200 confirmatory calibration
-and 140 validation episodes completed. The unchanged frozen test split is
-running exactly once on Thor, so Phase 5 is not yet complete.
+Phase 5 is complete against its registered bounded gates. The
+sequential-statistics core, trace-derived score adapter, and confirmatory
+execution framework are implemented. Preliminary Qwen2.5-0.5B and
+Qwen2.5-7B pilots ran on Thor, followed by all 200 calibration, 140 validation,
+and 560 exactly-once held-out test episodes. The final report binds 48 shard
+artifacts, the frozen specification and manifest, the execution revision, and
+the pinned Qwen2.5-7B model revision.
 
 Before the first confirmatory canary, the launch boundary was hardened:
 
@@ -95,6 +97,39 @@ condition, or gate was changed in response. The frozen test was therefore
 opened exactly once to measure held-out transfer honestly rather than optimize
 against validation. Test uses the same checkpoint with a held-out decoding
 configuration; it is not cross-model-family replication.
+
+### Held-out test result
+
+The integrity audit found 16 valid test shards, 560 unique assignments, exact
+frozen coverage, no non-test assignment, utility `1.0` throughout, and exact
+model, implementation, and score provenance. Mean episode latency was `119.02`
+seconds. The e-process produced:
+
+| Condition | Alarm/detection | Detected before irreversible action | Median delay | Mean terminal log evidence |
+| --- | ---: | ---: | ---: | ---: |
+| Benign stationary | 0/80 | — | — | -3.85 |
+| Benign drift | 0/80 | — | — | -3.85 |
+| Benign unmodeled shift | 0/80 | — | — | -3.85 |
+| Low-rate attack | 22/80 | 22/80 | 8 | 16.15 |
+| Delayed trigger | 80/80 | 80/80 | 37 | 33.64 |
+| Memory poisoning | 60/80 | 60/80 | 5 | 50.36 |
+| Reward-induced attack | 60/80 | 60/80 | 5 | 54.03 |
+
+All six registered report gates passed: manifest completeness, held-out
+lifetime false-alarm control on valid benign conditions, positive terminal
+attack evidence, delay/before-harm reporting, non-overclaiming of conditional
+validity, and presence of the held-out decoding configuration. The validation
+low-rate failure partially reversed on test, reaching `27.5%`, but remained the
+weakest attack condition.
+
+This result does **not** establish monitor superiority. Calibration selected a
+zero threshold for the e-process, fixed per-turn monitor, and CUSUM because all
+calibration scores were zero. The three monitors consequently had identical
+held-out alarm rates, while the e-process had longer median delay on the
+detected attack conditions. The defensible claim is successful frozen
+calibration/held-out execution and measured stochastic power, not universal
+dominance of anytime evidence. Conditional arbitrary-history validity also
+remains unproved, and the held-out configuration uses the same checkpoint.
 
 ## Conjecture under test
 

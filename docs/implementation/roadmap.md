@@ -11,10 +11,10 @@ The implementation begins with scripted agents. Model downloads and GPU-backed e
 Phases 0–4 and the controlled Phase 6 capacity-shaping experiment are
 implemented. The Phase 3 + 6 adaptive-mediation and Phase 4 model-workflow
 remediation experiments have also run successfully on pinned
-Qwen2.5-7B-Instruct. Phase 5 includes its
-confirmatory statistical contract, goal-driven model-agent path, and resumable
-sharded runner, but its registered 7B calibration/validation/test run remains
-pending.
+Qwen2.5-7B-Instruct. Phase 5's full registered 900-episode 7B confirmatory run
+and final report are complete. Phase 7 now has a separately specified
+mechanism-diverse tail-robustness program; its new episode-level contracts and
+held-out model execution remain in progress.
 
 ## Reset decision
 
@@ -132,13 +132,14 @@ Status: complete. See [Phase 4 completion](phase-4-completion.md).
 
 ## Phase 5: Experiment 3 — anytime-valid evidence
 
-Status: in progress. The sequential-statistics foundation, trace-derived
+Status: complete against the registered bounded gates. The sequential-statistics foundation, trace-derived
 scoring, preliminary 0.5B/7B pilots, confirmatory split contract, uncertainty
 reporting, goal-driven prompts, resumable shards, mandatory split selection,
 and implementation-bound manifests are implemented; see
 [Phase 5 plan and first increment](phase-5-plan.md). The larger held-out 7B run
-has completed calibration and validation, and its unchanged test split is
-running exactly once; the final gate evaluation remains.
+completed all 200 calibration, 140 validation, and 560 exactly-once held-out
+test episodes. All report gates passed; see the completion report for the
+important limits on monitor superiority and conditional validity.
 
 ### Build
 
@@ -231,8 +232,9 @@ Recommended execution order:
 
 ## Current implementation target
 
-Two immediate tracks remain: execute Phase 5 in stages without exposing its
-test split, and optimize then replicate natural-language covert channels and
-model workflows on a held-out 7–9B model family.
-The next Phase 5 action is a one-episode 7B calibration canary, followed by
-calibration, validation, and only then the frozen test split.
+The immediate target is the
+[mechanism-diverse tail-robustness suite](../experiments/mechanism_diverse_tail/README.md):
+implement episode-level within-cell tail risk, matched common-mode failure
+panels, stack-specific adaptive attackers, and locked compound transfer on a
+genuinely held-out 7–9B model family. Fairlead integration remains an
+operational follow-up and is not part of the completed native Phase 5 evidence.
