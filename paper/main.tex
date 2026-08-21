@@ -25,8 +25,37 @@ A Falsifiable Evaluation Harness}
 \maketitle
 
 \begin{abstract}
-Multi-agent language-model systems create security failures that are not visible from isolated component evaluations: individually acceptable actions can compose into harm, coordination can use multiple carriers, and low-rate behavior can evade per-turn monitoring. We propose a falsifiable design principle: under fixed utility and latency budgets, select layered defenses by worst conditional tail risk only when their failures are demonstrably non-nested on matched opportunities, and require this complementarity to survive stack-aware adaptation and held-out transfer. We operationalize the proposal in \system{}, an open-model harness with immutable experiment manifests, paired seeds, trace hashing, defense gateways, and pre-specified success gates. The current evidence has three distinct tiers. First, 2,400 controlled synthetic trajectories validate estimands and leakage controls. Second, two Qwen2.5-7B canaries exercise defenses online: a 64-episode covert-channel study and a 24-episode six-role workflow study. Third, 900 two-agent, 100-turn episodes evaluate sequential monitors offline under a frozen split. Controlled tests recover complementary failure geometry ($\Gamma=0.406$) and before-harm intervention, while the selector-superiority and compound-transfer gates remain false. The 7B canaries show that generic paraphrasing breaks a fixed surface code but not an adapted semantic code, whereas a typed mediator reduces registered channel capacity without utility loss; provenance-aware repair prevents a registered harmful workflow while retaining exact utility. Sequential monitoring controls the registered benign lifetime-alarm bound but detects only 27.5\% of low-rate cases before harm. These findings support mechanism-backed feasibility, not a general robustness claim. We specify the missing model-backed complementarity, adaptive best-response, and genuinely held-out model-family experiments required for confirmation.
+Teams of language-model agents can create security failures that do not appear when each agent is tested alone. Safe-looking steps can combine into harm, agents can coordinate through hidden signals, and slow attacks can evade checks applied to one message at a time. We ask how to choose a set of defenses without making the system unusable.
+
+Our proposal is simple: focus on the most damaging failures within each type of attack; combine defenses only when they fail on different examples; and retest the combination after the attacker adapts and on settings that were not used to choose it. We built \system{}, an open-model testing system that fixes experiment settings in advance, pairs comparable runs, records execution traces, and separates model selection from final testing.
+
+We report three levels of evidence. First, 2,400 controlled simulations validate the measurements and test procedure. Second, two small Qwen2.5-7B studies show that a restricted message format can stop the tested hidden channel, and that targeted repair can block a harmful six-agent workflow while preserving task success. Third, 900 two-agent episodes show a monitoring gap: low-rate attacks were detected before harm in only 27.5\% of test cases under a strict false-alarm limit.
+
+These results show that the proposed defenses can work in the tested settings. They do not yet show that our selection method is better in general. That stronger claim requires tests in which model-based attackers adapt to each defense and the final system is evaluated on a genuinely different model family.
 \end{abstract}
+
+\section*{Reader Guide to Technical Terms}
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{p{2.8cm}p{7.2cm}p{5.7cm}}
+\toprule
+Term & Plain-language meaning & Why the paper uses it \\
+\midrule
+Trajectory & The full sequence of messages, shared-state updates, tool calls, and external actions produced by the agent team. & Harm can emerge from the sequence even when each individual step looks acceptable. \\
+Attack cell & One registered test condition, such as a particular attack, model, topology, communication channel, and time horizon. & It prevents easy cases from hiding a severe failure in one specific condition. \\
+Defense stack & The complete set of mediators, monitors, policy checks, and repair or blocking rules deployed together. & Layers can interact, so the full deployed combination must be tested. \\
+Tail risk / CVaR & The average loss among the worst $q$ fraction of outcomes; this paper uses the worst 10\%. & It focuses evaluation on rare but severe failures instead of average behavior. \\
+Failure diversity ($\Gamma$) & How much two defenses fail on different matched examples. & It tests whether another layer adds distinct coverage rather than duplicating the same protection. \\
+Interaction gap ($\Delta_{\mathrm{int}}$) & The difference between the expected overlap of individual failures and the observed failure of the enforced stack. & It reveals when deployment changes the trajectory and weakens the expected benefit. \\
+Stack-aware best response & An attacker re-optimized against the exact defense stack being tested. & A defense should remain useful after the attacker adapts to it. \\
+Held-out transfer & Final evaluation on models, prompts, attacks, or system layouts that were not used to choose the defense. & It tests generalization and prevents the final result from being tuned to the test. \\
+Before-harm intervention & Detection or repair that occurs before the registered irreversible action. & Eventual detection is not useful if the damaging action has already happened. \\
+Typed mediation and provenance-aware repair & Restricting communication to approved fields, or changing an unsafe action using the history that produced it. & These mechanisms aim to block harmful composition while preserving legitimate task utility. \\
+\bottomrule
+\end{tabular}
+\end{center}
 
 \section{Introduction}
 The unit of security in a multi-agent system is a trajectory, not a model call. A planner, reviewer, memory service, tool user, and executor can each satisfy local checks while their combined actions violate a system policy. Communication may be explicit or hidden in wording, timing, state, tool arguments, memory, or environmental actions. The resulting failures are conditional and heavy-tailed: averaging across attacks, models, topologies, and horizons can conceal the few cells that dominate real harm.
