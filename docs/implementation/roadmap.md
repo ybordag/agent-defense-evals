@@ -137,7 +137,8 @@ scoring, preliminary 0.5B/7B pilots, confirmatory split contract, uncertainty
 reporting, goal-driven prompts, resumable shards, mandatory split selection,
 and implementation-bound manifests are implemented; see
 [Phase 5 plan and first increment](phase-5-plan.md). The larger held-out 7B run
-and its resulting gate evaluation remain.
+has completed calibration and validation, and its unchanged test split is
+running exactly once; the final gate evaluation remains.
 
 ### Build
 

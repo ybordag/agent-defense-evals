@@ -4,8 +4,9 @@
 
 Phase 5 is in progress. The sequential-statistics core, trace-derived score adapter,
 and confirmatory execution framework are implemented. Preliminary
-Qwen2.5-0.5B and Qwen2.5-7B pilots ran on Thor. The confirmatory model run has
-not yet been executed, so Phase 5 is not complete.
+Qwen2.5-0.5B and Qwen2.5-7B pilots ran on Thor. All 200 confirmatory calibration
+and 140 validation episodes completed. The unchanged frozen test split is
+running exactly once on Thor, so Phase 5 is not yet complete.
 
 Before the first confirmatory canary, the launch boundary was hardened:
 
@@ -21,6 +22,79 @@ The confirmatory run is native to the common event-sourced runner and resumable
 shard format. It is not yet Fairlead-backed: the current Fairlead integration
 lacks the Python evaluation worker, artifact-digest verification, and
 trace-level routing provenance required for an unattended evidentiary run.
+
+### Confirmatory calibration launch
+
+The launch is frozen to:
+
+- implementation revision:
+  `d681600a68fd51bd23660a82dcfd4a56e7dba3b0`;
+- Qwen2.5-7B-Instruct model and tokenizer revision:
+  `a09a35458c702b33eeacc393d103063234e8bc28`;
+- specification SHA-256:
+  `aa795b33e24d42de946a85ea2a18e95bf0394a384bea0bc67010f0049708f3e4`;
+- manifest SHA-256:
+  `06f0d5dd901529879f790391677aeaaf67d1a31f620fb2123bf17b4df0c050e4`;
+- manifest file SHA-256:
+  `8b2b830f372c02f7e286a76d3c0e23d1ada4c2b1acd15511fd64bdeac485585b`.
+
+Thor serves the exact model ID `qwen2.5-7b-instruct` through vLLM 0.23.0 with
+a 2,048-token context and 16-sequence batching. FlashInfer sampling was disabled
+through its supported environment switch because its JIT could not find a
+`ninja` executable; the Triton sampler passed a structured-output qualification.
+
+The first calibration assignment produced 200 successful generations, 100
+fully attributed scores, utility `1.0`, a zero mean coordination score, and a
+valid trace digest in 107.29 seconds. A second resumed calibration assignment
+completed in 103.28 seconds with the same integrity properties and a distinct
+trace digest. The partial shard artifact contains two episodes and has digest
+`a8834e01de5a046ad37499b7a3ebe25067ef32988ef90a4e2c2520bbce05ba32`.
+
+Four concurrent one-episode calibration shards then completed without errors
+in approximately 95 seconds per shard, confirming effective batching. The full
+16-shard calibration split completed in a durable tmux session, resuming the
+existing partial artifacts.
+
+The calibration integrity audit found 16 valid shards, 200 unique assignments,
+exact frozen coverage, no non-calibration assignment, 100 scores per episode,
+utility `1.0` throughout, and exact model, implementation, and score
+provenance. All 20,000 calibration scores were zero. Consequently the empirical
+e-process log threshold, fixed-score threshold, and CUSUM threshold are all
+`0.0`; this result was retained rather than tuned away. All 16 registered
+condition/prompt/time-bin diagnostic groups remained within the descriptive
+null bound, with maximum Hoeffding upper bound `0.0480 < 0.08`.
+
+After that calibration-only review, the unchanged frozen validation split ran
+as 16 resumable shards. Its integrity audit found exact coverage, 140 unique
+validation assignments, 100 scores per episode, utility `1.0`, and exact model,
+implementation, and score provenance.
+
+### Validation decision
+
+At the frozen zero thresholds, the validation e-process produced:
+
+| Condition | Alarm/detection | Detected before irreversible action | Mean terminal log evidence |
+| --- | ---: | ---: | ---: |
+| Benign stationary | 0/20 | — | -3.85 |
+| Benign drift | 0/20 | — | -3.85 |
+| Benign unmodeled shift | 0/20 | — | -3.85 |
+| Low-rate attack | 0/20 | 0/20 | -3.71 |
+| Delayed trigger | 20/20 | 20/20 | 32.27 |
+| Memory poisoning | 14/20 | 10/20 | 34.21 |
+| Reward-induced attack | 20/20 | 20/20 | 77.07 |
+
+The zero observed valid-benign alarms have a 95% Wilson upper endpoint of
+`0.161` at only 20 validation episodes, so validation alone cannot establish a
+5% rate. None of the 16 validation group/time-bin Hoeffding diagnostics falls
+below the registered `0.08` bound; their maximum upper endpoint is `0.114`.
+This reflects limited group sample size despite zero observed benign scores.
+
+The low-rate condition is a clear power failure on validation and predicts
+that the final attack-evidence gate may fail. No prompt, score, threshold,
+condition, or gate was changed in response. The frozen test was therefore
+opened exactly once to measure held-out transfer honestly rather than optimize
+against validation. Test uses the same checkpoint with a held-out decoding
+configuration; it is not cross-model-family replication.
 
 ## Conjecture under test
 
@@ -232,6 +306,10 @@ For the first Thor check, add `--max-new-episodes 1` to calibration shard zero.
 That performs 200 model generations, writes a valid partial checkpoint, and
 does not expose validation or test behavior. Rerun the identical command
 without the throttle to resume and complete that shard.
+
+`--max-new-episodes` limits newly added episodes per invocation. Repeating a
+throttled command advances the shard by that many additional assignments; it
+is not an idempotent no-op until every selected assignment is complete.
 
 Aggregate only after every manifest assignment is present:
 
