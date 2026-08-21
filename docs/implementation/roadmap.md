@@ -236,7 +236,7 @@ Recommended execution order:
 
 The immediate target is the
 [mechanism-diverse tail-robustness suite](../experiments/mechanism_diverse_tail/README.md):
-implement episode-level within-cell tail risk, matched common-mode failure
+implement episode-level within-scenario tail risk, matched common-mode failure
 panels, stack-specific adaptive attackers, and locked compound transfer on a
 genuinely held-out 7–9B model family. Fairlead integration remains an
 operational follow-up and is not part of the completed native Phase 5 evidence.

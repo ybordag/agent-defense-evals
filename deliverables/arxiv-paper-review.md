@@ -14,7 +14,7 @@ The paper is strongest when it is conservative. The sentence “These findings s
 
 - Replaced the anonymous author line with **Yashila Bordag**.
 - Added Yashila Bordag to the PDF metadata.
-- Corrected the attack-cell tuple from seven to eight dimensions by separating directness and reversibility.
+- Corrected the attack-scenario tuple from seven to eight dimensions by separating directness and reversibility.
 - Defined the CVaR convention explicitly as mean loss in the worst q fraction, with q = 0.10 in the registered experiments.
 
 ## Major strengths

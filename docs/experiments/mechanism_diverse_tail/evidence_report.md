@@ -3,7 +3,7 @@
 ## Executive verdict
 
 This report evaluates the bounded conjecture that mechanism-diverse defense
-stacks, selected using utility-constrained worst-cell tail risk, can reduce
+stacks, selected using utility-constrained worst-scenario tail risk, can reduce
 common-mode failure under compound multi-agent attacks.
 
 The evidence is deliberately separated into three levels:
@@ -29,15 +29,15 @@ and cross-model transfer as the critical remaining tests.
 |---|---|---:|---|---|
 | E01 selector comparison | Controlled trajectory experiment | 1,200 validation + 1,200 sealed test trajectories | All five selectors choose `diverse-stack`; proposed advantage is 0.00 | Inconclusive by design; no selector-superiority claim |
 | E02 failure complementarity | Controlled matched attack panels plus structural/model precursors | 2,400 controlled trajectories; 41 coalitions × 4 scripted topologies; 64 model-backed channel episodes | Diverse-stack joint bypass 0.031 versus 0.631 homogeneous; realized bypass 0.056 versus 0.650 | Synthetic gate passes; LLM-agent complementarity untested |
-| E03 adaptive best response | Controlled adaptation plus 7B registered-codebook canary | 2,400 controlled trajectories; 64 Qwen2.5-7B episodes | Controlled adaptive worst-cell CVaR 0.93 versus 1.00 homogeneous; registered semantic adaptation defeats paraphrase in the 7B canary | Synthetic gate and model manipulation check pass; autonomous best response untested |
-| E04 compound held-out transfer | Controlled structural holdout | 3 synthetic predictive stacks; 3 compound synthetic cells | Validation complementarity/held-out robustness Spearman 0.866; compound gate fails because E01 has no advantage | Not supported; blocked on discriminative validation design and a held-out 7–9B family |
+| E03 adaptive best response | Controlled adaptation plus 7B registered-codebook canary | 2,400 controlled trajectories; 64 Qwen2.5-7B episodes | Controlled adaptive worst-scenario CVaR 0.93 versus 1.00 homogeneous; registered semantic adaptation defeats paraphrase in the 7B canary | Synthetic gate and model manipulation check pass; autonomous best response untested |
+| E04 compound held-out transfer | Controlled structural holdout | 3 synthetic predictive stacks; 3 compound synthetic scenarios | Validation complementarity/held-out robustness Spearman 0.866; compound gate fails because E01 has no advantage | Not supported; blocked on discriminative validation design and a held-out 7–9B family |
 | E05 irreversibility and sequential validity | Controlled enforcement plus frozen held-out Phase 5 evidence and 7B workflow precursor | 2,400 controlled trajectories; 900 Qwen2.5-7B sequential episodes; 24 Qwen2.5-7B vLLM workflow episodes | Synthetic harm 0.725 → 0.025; before-harm intervention 0.95; Phase 5 before-harm rates 0.275–1.00 | Synthetic gate passes; model-backed end-to-end diverse enforcement remains unconfirmed |
 
 ## Conjecture and primary estimands
 
-For stack \(\pi\), attack cell \(g\), stack-aware attacker \(a\), and stochastic
+For stack \(\pi\), attack scenario \(g\), stack-aware attacker \(a\), and stochastic
 trajectory \(\omega\), the proposed selector minimizes an uncertainty-adjusted
-worst-cell upper-tail loss subject to operational constraints:
+worst-scenario upper-tail loss subject to operational constraints:
 
 \[
 \hat\pi = \arg\min_{\pi:\,\mathrm{LCB}(U_\pi)\ge u_{\min}}
@@ -72,13 +72,13 @@ verified specification, manifest, validation-artifact, and selection hashes.
 |---|---:|---|
 | E01 | All five selectors choose `diverse-stack`; improvement 0.00 | **Inconclusive** |
 | E02 | \(\Gamma=0.406\), realized gain 0.381, diverse versus homogeneous bypass difference 0.600 | **Pass (synthetic)** |
-| E03 | Adaptive worst-cell CVaR 0.93 diverse versus 1.00 homogeneous; difference 0.07 | **Pass (synthetic)** |
-| E04 | Validation complementarity/held-out robustness Spearman 0.866; three compound cells | **Fail**, because the registered compound selector advantage is absent |
+| E03 | Adaptive worst-scenario CVaR 0.93 diverse versus 1.00 homogeneous; difference 0.07 | **Pass (synthetic)** |
+| E04 | Validation complementarity/held-out robustness Spearman 0.866; three compound scenarios | **Fail**, because the registered compound selector advantage is absent |
 | E05 | Irreversible harm 0.725 → 0.025; harm reduction LCB 0.527; before-harm 0.95 | **Pass (synthetic)** |
 
 E01 is a useful negative result: because every selector chose the same stack,
 the fixture contains no evidence that the proposed hierarchical tail selector
-is better than pooled mean, pooled CVaR, or worst-cell mean selection. E04
+is better than pooled mean, pooled CVaR, or worst-scenario mean selection. E04
 correctly remains false rather than treating favorable rank correlation as a
 complete transfer result.
 

@@ -23,7 +23,7 @@ failure modes that remain complementary after attacker adaptation.
 
 ## Operational statement
 
-For defense stack \(\pi\), compound attack cell \(g\), attacker best-response
+For defense stack \(\pi\), compound attack scenario \(g\), attacker best-response
 approximation \(a\), and stochastic trajectory \(\omega\), let
 \(Z(\pi,g,a,\omega)\in[0,1]\) be severity-weighted security loss. The proposed
 selector minimizes
@@ -67,7 +67,7 @@ they can be unstable when marginal failure rates are near zero.
 
 | ID | Experiment | Primary question | Main comparison | Section 3.3 dimensions | Evidence status |
 |---|---|---|---|---|---|
-| E01 | [Selector comparison](01_selector_comparison/README.md) | Does worst-cell within-cell tail selection transfer better than mean-risk selectors? | Mean, pooled CVaR, worst-cell mean, hierarchical tail | All; emphasis on detectability, horizon, reversibility | Controlled: inconclusive; all selectors chose one stack |
+| E01 | [Selector comparison](01_selector_comparison/README.md) | Does worst-scenario within-scenario tail selection transfer better than mean-risk selectors? | Mean, pooled CVaR, worst-scenario mean, hierarchical tail | All; emphasis on detectability, horizon, reversibility | Controlled: inconclusive; all selectors chose one stack |
 | E02 | [Failure complementarity](02_failure_complementarity/README.md) | Do heterogeneous mechanisms reduce joint bypass beyond matched homogeneous ensembles? | Diverse stack vs same-surface ensembles | Detectability, locality, composition, attribution, horizon | Controlled gate passed; model-agent estimate pending |
 | E03 | [Adaptive best response](03_adaptive_best_response/README.md) | Does complementarity survive attacker adaptation to each deployed stack? | Frozen attacker vs budget-matched stack-specific attacker | Detectability, directness, composition, horizon | Controlled gate passed; autonomous LLM search pending |
 | E04 | [Compound held-out transfer](04_compound_heldout_transfer/README.md) | Does validation failure geometry predict robustness, and does the selected stack survive compound shift? | Predictor baselines and selected-stack baselines | All eight dimensions across single-axis and compound holdouts | Controlled compound gate failed; held-out model pending |
@@ -79,13 +79,13 @@ they can be unstable when marginal failure rates are near zero.
 |---|---|---|---|
 | Immutable specifications, seeds, traces, replay, provenance | Implemented | Common execution and audit substrate | Add experiment-specific schemas and manifests |
 | Model-backed 7B execution through vLLM | Qualified on Qwen2.5-7B | Pilot and primary-family runs | Add a genuinely held-out 7--9B family |
-| Capacity mediation and adaptive semantic codebooks | Implemented | Covert-channel cells and mechanism layers | Add stack-specific attacker search, not only registered codebooks |
-| Coalition/provenance workflow and structural repair | Implemented | Composition, attribution, and irreversibility cells | Add unseen model topology and coalition conditions |
+| Capacity mediation and adaptive semantic codebooks | Implemented | Covert-channel scenarios and mechanism layers | Add stack-specific attacker search, not only registered codebooks |
+| Coalition/provenance workflow and structural repair | Implemented | Composition, attribution, and irreversibility scenarios | Add unseen model topology and coalition conditions |
 | Anytime-valid monitoring and frozen split machinery | Implemented | Sequential layer and lifetime false-alarm constraint | Generalize artifacts from Phase 5 into stack-level outcomes |
-| Phase 7 utility-constrained worst-case/CVaR reporting | Implemented against a controlled fixture | Initial selector implementation | Replace fixture outcomes; add within-cell trajectory CVaR and UCBs |
+| Phase 7 utility-constrained worst-case/CVaR reporting | Implemented against a controlled fixture | Initial selector implementation | Replace fixture outcomes; add within-scenario trajectory CVaR and UCBs |
 | Per-layer shadow decisions and joint bypass labels | Partial | Required for \(p_j,p_{\cap},\Gamma\) | Define opportunity-aware failure labels and counterfactual forks |
 | Adaptive attacker optimization | Partial | Required for E03 and E04 | Add equal-budget prompt/policy search per stack |
-| Cross-axis transfer matrix | Schema/fixture implemented | Required for E04 | Execute trace-derived held-out cells |
+| Cross-axis transfer matrix | Schema/fixture implemented | Required for E04 | Execute trace-derived held-out scenarios |
 
 ## Candidate defense families
 
@@ -132,7 +132,7 @@ The full conjecture is supported only if all of the following hold:
   stack-specific attacker budget;
 - E04 shows that validation complementarity predicts held-out robustness
   better than component accuracy and cost alone;
-- E04's compound gate shows at least `0.05` absolute reduction in held-out maximum-cell
+- E04's compound gate shows at least `0.05` absolute reduction in held-out maximum-scenario
   worst-decile loss versus the strongest registered baseline selector, with a
   one-sided 95% confidence bound above zero;
 - the selected stack satisfies the frozen utility, lifetime false-alarm, and
@@ -141,7 +141,7 @@ The full conjecture is supported only if all of the following hold:
 
 The `0.05` margin is a proposed practical-effect threshold on a `[0,1]` loss
 scale. It may be revised using pilot data, but must be frozen before any
-confirmatory test cell is opened.
+confirmatory test scenario is opened.
 
 ## Global falsification and interpretation
 
@@ -149,7 +149,7 @@ The conjecture is falsified in the registered setting if mechanism diversity
 does not improve joint bypass, if the gain vanishes after attacker adaptation,
 if validation complementarity fails to predict held-out risk, or if the stack
 cannot meet utility and operational constraints. A failed experiment remains
-a result; test cells must not be used to redesign and retest the same frozen
+a result; test scenarios must not be used to redesign and retest the same frozen
 hypothesis.
 
 Success would establish a bounded empirical design principle, not universal

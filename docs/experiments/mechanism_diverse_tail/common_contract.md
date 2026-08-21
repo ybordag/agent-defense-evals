@@ -16,7 +16,7 @@ estimated without test leakage.
 The base unit is one closed-loop multi-agent episode. The hierarchy is:
 
 1. model family and exact revision;
-2. compound attack cell;
+2. compound attack scenario;
 3. defense stack;
 4. task/prompt family;
 5. attacker adaptation seed;
@@ -27,9 +27,9 @@ Uncertainty must respect this hierarchy. Token-level observations are not
 independent samples. Bootstrap or randomization procedures should cluster at
 least by task and attacker seed.
 
-## Attack-cell schema
+## Attack-scenario schema
 
-Each cell records the eight Section 3.3 dimensions:
+Each scenario records the eight Section 3.3 dimensions:
 
 | Dimension | Experimental controls |
 |---|---|
@@ -42,7 +42,7 @@ Each cell records the eight Section 3.3 dimensions:
 | Directness | Explicit instruction, reward-induced, or emergent coordination |
 | Reversibility | Rollback fraction, first irreversible action, containment cost |
 
-Cells should also identify model, prompt, attack, topology, coalition, and
+Scenarios should also identify model, prompt, attack, topology, coalition, and
 horizon families so complete families can be held out.
 
 ## Defense execution and shadow forks
@@ -96,7 +96,7 @@ selection constraint rather than a compensating term in the security loss.
 
 ### Statistical summaries
 
-For each stack and cell report:
+For each stack and scenario report:
 
 - mean and maximum observed security loss;
 - upper-tail CVaR at frozen tail mass;
@@ -122,7 +122,7 @@ stack, and split. Restart and resume may not change an assignment.
 
 ## Sample strategy
 
-The initial model-backed pilot target is 24--40 episodes per stack/cell with
+The initial model-backed pilot target is 24--40 episodes per stack/scenario with
 balanced tasks and attacker seeds. This is for variance and throughput
 measurement, not confirmation. Confirmatory counts are selected from the pilot
 to meet a frozen confidence-width or power target for a `0.05` absolute loss
@@ -149,7 +149,7 @@ stochastic LLM-based agents.
 - a shared trajectory-to-loss contract;
 - opportunity-aware per-layer and joint bypass records;
 - counterfactual shadow forks for constituent layers;
-- within-cell trajectory CVaR with clustered uncertainty bounds;
+- within-scenario trajectory CVaR with clustered uncertainty bounds;
 - trace-derived Phase 7 outcome ingestion;
 - matched homogeneous and heterogeneous stack definitions.
 
@@ -162,7 +162,7 @@ stochastic LLM-based agents.
 
 ## Progress checklist
 
-- [ ] Freeze typed attack-cell and defense-stack schemas.
+- [ ] Freeze typed attack-scenario and defense-stack schemas.
 - [ ] Freeze security severity and irreversible-action semantics.
 - [ ] Implement opportunity and bypass labels.
 - [ ] Implement paired shadow/enforcement forks.

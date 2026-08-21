@@ -19,7 +19,7 @@ unauthorized proposal rate was zero in every condition. Effective typed-flow
 violations were `1.00` for the two unblocked harmful conditions and `0.00` for
 hard blocking, repair, and benign conditions.
 
-Each cell contains four task-balanced episodes, so the Wilson 95% interval is
+Each scenario contains four task-balanced episodes, so the Wilson 95% interval is
 `[0.510, 1.000]` around an observed rate of one and `[0.000, 0.490]` around an
 observed rate of zero. This is strong mechanism evidence but a small pilot, not
 a population-level efficacy estimate.

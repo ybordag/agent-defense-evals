@@ -22,7 +22,7 @@ The distinction between attack vectors and Section 3.3 dimensions is valuable. V
 
 ### 2. The novelty boundary is unusually disciplined
 
-Slides 8–9 do not claim CVaR, group robustness, confidence bounds, or anytime-valid evidence as novel. The proposed contribution is the relationship among:
+Slides 8–9 do not claim Conditional Value at Risk (CVaR), group robustness, confidence bounds, or anytime-valid evidence as novel. The proposed contribution is the relationship among:
 
 - conditional tail selection;
 - empirically measured failure complementarity;
@@ -62,7 +62,7 @@ The answer should be precise:
 
 > The novelty is not CVaR or layered defense by itself. It is an auditable selection-and-evaluation protocol that tests whether mechanism-level failure complementarity predicts adaptive held-out tail robustness under utility, lifetime-error, and latency constraints.
 
-The interviewee should contrast this with work that characterizes collusion or covert channels, evaluates one detector, or reports average attack success. The proposed harness asks whether a defense stack remains complementary after the attacker adapts and whether validation geometry transfers to sealed compound cells.
+The interviewee should contrast this with work that characterizes collusion or covert channels, evaluates one detector, or reports average attack success. The proposed harness asks whether a defense stack remains complementary after the attacker adapts and whether validation geometry transfers to sealed compound scenarios.
 
 ### 2. “Are the results about LLM agents or synthetic fixtures?”
 
@@ -83,9 +83,9 @@ The experimental comparison must therefore match diverse and homogeneous stacks 
 
 ### 4. “Why CVaR rather than average loss or maximum loss?”
 
-Pooled averages can hide rare catastrophic cells. A raw sample maximum is unstable and can be dominated by one stochastic trajectory. Conditional upper-tail CVaR measures the average severity among the worst registered fraction of trajectories, while the confidence bound accounts for estimation uncertainty.
+Pooled averages can hide rare catastrophic scenarios. A raw sample maximum is unstable and can be dominated by one stochastic trajectory. Conditional upper-tail CVaR measures the average severity among the worst registered fraction of trajectories, while the confidence bound accounts for estimation uncertainty.
 
-The presenter should also acknowledge that tail claims require enough trajectories per cell; a worst-decile estimate supported by one or two episodes is not meaningful.
+The presenter should also acknowledge that tail claims require enough trajectories per scenario; a worst-decile estimate supported by one or two episodes is not meaningful.
 
 ### 5. “How is attacker adaptation made fair?”
 
@@ -97,7 +97,7 @@ This is planned but not yet complete for autonomous LLM attack search.
 
 Current generality is limited to the registered Qwen2.5-7B runtime, attack codebooks, tools, prompts, topologies, and horizons. A defensible transfer claim requires a genuinely different held-out 7–9B family plus held-out prompts, attacks, coalition sizes, topologies, and horizons.
 
-The harness is more transferable than the current numerical findings. In production it can ingest real traces, define consequence-weighted losses, shadow-score candidate layers, and optimize a feasible stack against the organization’s own threat cells.
+The harness is more transferable than the current numerical findings. In production it can ingest real traces, define consequence-weighted losses, shadow-score candidate layers, and optimize a feasible stack against the organization’s own threat scenarios.
 
 ### 7. “Where is the information-theoretic contribution?”
 
@@ -133,11 +133,11 @@ However, the current canary is empirical and codebook-specific. It does not yet 
 
 ### What is the one-sentence conjecture?
 
-Mechanism-diverse defense stacks whose failures are complementary on validation panels will achieve lower adaptive held-out worst-cell tail loss than matched homogeneous or single-surface defenses, provided utility, lifetime false alarms, and latency remain within frozen constraints.
+Mechanism-diverse defense stacks whose failures are complementary on validation panels will achieve lower adaptive held-out worst-scenario tail loss than matched homogeneous or single-surface defenses, provided utility, lifetime false alarms, and latency remain within frozen constraints.
 
 ### What would falsify it?
 
-Any of the following: no complementarity over matched opportunities; realized stack gain disappearing because of an adverse interaction gap; the gain vanishing under equal-budget stack-specific attacker search; validation Γ failing to predict held-out performance; no selector advantage on compound cells; or violation of operational constraints.
+Any of the following: no complementarity over matched opportunities; realized stack gain disappearing because of an adverse interaction gap; the gain vanishing under equal-budget stack-specific attacker search; validation Γ failing to predict held-out performance; no selector advantage on compound scenarios; or violation of operational constraints.
 
 ### Why is Γ not enough?
 
@@ -145,7 +145,7 @@ Any of the following: no complementarity over matched opportunities; realized st
 
 ### Why does E01 matter if the diverse stack was selected?
 
-Because every selector selected it. That validates the pipeline but provides no evidence that the proposed selector is better than pooled mean, pooled CVaR, worst-cell mean, or other baselines.
+Because every selector selected it. That validates the pipeline but provides no evidence that the proposed selector is better than pooled mean, pooled CVaR, worst-scenario mean, or other baselines.
 
 ### Why does E04 fail if the correlation is high?
 
@@ -161,7 +161,7 @@ The full adaptive and held-out transfer test: there is not yet autonomous equal-
 
 ### How would this transfer to real deployments?
 
-Define organization-specific attack cells and consequence severity, replay or simulate representative workflows, shadow-score candidate defense layers, enforce only after validation selection, and continuously monitor utility, latency, lifetime false alarms, and before-harm intervention. The selector can be rerun when the model, tools, policy, or threat distribution changes.
+Define organization-specific attack scenarios and consequence severity, replay or simulate representative workflows, shadow-score candidate defense layers, enforce only after validation selection, and continuously monitor utility, latency, lifetime false alarms, and before-harm intervention. The selector can be rerun when the model, tools, policy, or threat distribution changes.
 
 ## Delivery guidance
 

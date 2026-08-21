@@ -2,7 +2,7 @@
 
 ## Status
 
-**Controlled execution complete; synthetic gate passed.** Adaptive worst-cell
+**Controlled execution complete; synthetic gate passed.** Adaptive worst-scenario
 CVaR is `0.93` for the diverse stack and `1.00` for the homogeneous comparator.
 The 7B canary still uses a registered semantic codebook, so equal-budget
 autonomous LLM best-response search remains pending.
@@ -63,7 +63,7 @@ failure to find a bypass is not a proof that none exists.
 ## Metrics
 
 - best-found and fresh-seed attack success;
-- maximum-cell worst-decile security loss;
+- maximum-scenario worst-decile security loss;
 - adaptation gain over the frozen attacker;
 - retained `Gamma` and joint bypass after adaptation;
 - search efficiency versus model-query budget;
@@ -88,7 +88,7 @@ that were designed before the defense stack was known.
 ## Definition of success
 
 E03 supports adaptive robustness if the selected diverse stack retains a
-positive `Gamma` and at least `0.05` lower maximum-cell worst-decile loss than
+positive `Gamma` and at least `0.05` lower maximum-scenario worst-decile loss than
 the strongest matched baseline after equal-budget stack-specific adaptation,
 with a one-sided 95% clustered confidence bound above zero and all utility
 constraints satisfied.

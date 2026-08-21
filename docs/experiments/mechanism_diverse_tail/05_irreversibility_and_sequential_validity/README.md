@@ -41,7 +41,7 @@ intervention was effective beforehand.
 Calibrate the sequential process only on registered benign calibration
 families. Test lifetime validity under optional stopping, randomized episode
 length, benign prompt drift, benign topology change, and benign memory shift.
-Attack cells include delayed trigger, low-rate coordination, memory poisoning,
+Attack scenarios include delayed trigger, low-rate coordination, memory poisoning,
 and reward-induced composition. Conditional calibration claims are made only
 for strata with a frozen null model and enough data to estimate their bound.
 
@@ -82,7 +82,7 @@ for strata with a frozen null model and enough data to estimate their bound.
 - eventual detection, reported separately;
 - cascade reach and rollback/repair cost;
 - benign utility and false repair/block rate;
-- maximum-cell worst-decile harm loss.
+- maximum-scenario worst-decile harm loss.
 
 ## Goal
 
@@ -97,7 +97,7 @@ inflating lifetime false alarms should not count as valid.
 - [ ] Freeze sequential null, alpha, stopping rules, and calibration strata.
 - [ ] Add optional-stopping and benign-shift validity checks.
 - [ ] Integrate sequential evidence with the action gateway.
-- [ ] Add full-provenance and degraded-provenance workflow cells.
+- [ ] Add full-provenance and degraded-provenance workflow scenarios.
 - [ ] Add benign utility controls and repair audits.
 - [ ] Run primary-model pilot and freeze thresholds.
 - [ ] Execute held-out workflow conditions.

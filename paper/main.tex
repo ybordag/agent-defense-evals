@@ -45,9 +45,10 @@ These results show that the proposed defenses can work in the tested settings. T
 Term & Meaning & Application \\
 \midrule
 Trajectory & The full sequence of messages, shared-state updates, tool calls, and external actions produced by the agent team. & Harm can emerge from the sequence even when each individual step looks acceptable. \\
-Attack cell & One registered test condition, such as a particular attack, model, topology, communication channel, and time horizon. & It prevents easy cases from hiding a severe failure in one specific condition. \\
+Attack scenario & One registered test condition, such as a particular attack, model, topology, communication channel, and time horizon. & It prevents easy cases from hiding a severe failure in one specific condition. \\
 Defense stack & The complete set of mediators, monitors, policy checks, and repair or blocking rules deployed together. & Layers can interact, so the full deployed combination must be tested. \\
-Tail risk / CVaR & The average loss among the worst $q$ fraction of outcomes; this paper uses the worst 10\%. & It focuses evaluation on rare but severe failures instead of average behavior. \\
+Conditional Value at Risk (CVaR) & The average loss within a specified worst-case tail; this paper defines $\cvar_{0.10}$ as the mean loss in the worst 10\% of trajectories. & It measures severity inside the tail without relying on one sample maximum. \\
+Upper confidence bound (UCB) & A one-sided statistical bound constructed to exceed the unknown population value with a stated confidence level under the registered method. & It prevents an uncertain or undersampled loss estimate from being treated as safely low. \\
 Failure diversity ($\Gamma$) & How much two defenses fail on different matched examples. & It tests whether another layer adds distinct coverage rather than duplicating the same protection. \\
 Interaction gap ($\Delta_{\mathrm{int}}$) & The difference between the expected overlap of individual failures and the observed failure of the enforced stack. & It reveals when deployment changes the trajectory and weakens the expected benefit. \\
 Stack-aware best response & An attacker re-optimized against the exact defense stack being tested. & A defense should remain useful after the attacker adapts to it. \\
@@ -60,7 +61,7 @@ Typed mediation and provenance-aware repair & Restricting communication to appro
 
 \clearpage
 \section{Introduction}
-The unit of security in a multi-agent system is a trajectory, not a model call. A planner, reviewer, memory service, tool user, and executor can each satisfy local checks while their combined actions violate a system policy. Communication may be explicit or hidden in wording, timing, state, tool arguments, memory, or environmental actions. The resulting failures are conditional and heavy-tailed: averaging across attacks, models, topologies, and horizons can conceal the few cells that dominate real harm.
+The unit of security in a multi-agent system is a trajectory, not a model call. A planner, reviewer, memory service, tool user, and executor can each satisfy local checks while their combined actions violate a system policy. Communication may be explicit or hidden in wording, timing, state, tool arguments, memory, or environmental actions. The resulting failures are conditional and heavy-tailed: averaging across attacks, models, topologies, and horizons can conceal the few scenarios that dominate real harm.
 
 Existing work identifies multi-agent collusion, steganography, prompt injection, cascading compromise, and governance challenges \citep{openchallenges,secretcollusion,agentsecuritybench}. Risk-sensitive optimization, group distributional robustness, confidence sequences, and steganographic security definitions provide important machinery \citep{rockafellar2000,sagawa2019,howard2021,ramdas2023,cachin1998}. Our contribution is not to rename that machinery. It is to make a narrower empirical conjecture testable:
 
@@ -73,11 +74,11 @@ This paper makes four contributions. First, it formalizes the conjecture and sep
 \section{Threat Model and Attack Dimensions}
 We consider a system of $n$ stochastic LLM agents connected by typed or free-form communication, shared state, tools, and an external-action boundary. A coalition may include one or more compromised roles. The defender observes only the surfaces exposed by the deployment and may transform, block, repair, or score events.
 
-Following the attack-variation framing in \citet{openchallenges}, an attack cell $x\in\mathcal{X}$ is a tuple over:
+Following the attack-variation framing in \citet{openchallenges}, an attack scenario $x\in\mathcal{X}$ is a registered test condition represented as a tuple over:
 \[
 x=(d,\ell,c,m,h,a,r,v),
 \]
-where $d$ is detectability, $\ell$ locality, $c$ cascading behavior, $m$ composition, $h$ time horizon, $a$ attributability, $r$ directness, and $v$ reversibility. Our registered cells additionally vary model family, prompt family, topology, coalition, carrier, tool access, and attacker budget. A compound held-out cell changes several axes simultaneously.
+where $d$ is detectability, $\ell$ locality, $c$ cascading behavior, $m$ composition, $h$ time horizon, $a$ attributability, $r$ directness, and $v$ reversibility. Our registered scenarios additionally vary model family, prompt family, topology, coalition, carrier, tool access, and attacker budget. A compound held-out scenario changes several axes simultaneously.
 
 The main attack mechanisms are:
 \begin{itemize}
@@ -89,19 +90,56 @@ The main attack mechanisms are:
 
 The attacker is adaptive when it receives the deployed defense stack and an equal query, token, tool, and rollout budget, then optimizes a policy against that stack. The current experiments include registered adaptations and goal-driven pressure, but not autonomous equal-budget best-response search. We keep this boundary explicit.
 
+\section{Tail Concentration and Layered Harm Reduction}
+Uneven security loss does not by itself imply that rare outcomes account for most harm. Frequency and consequence must be separated. Let $L\geq 0$ be trajectory-level security loss and let $q$ denote an upper-tail fraction. Define the top-$q$ harm share as
+\begin{equation}
+S(q)=
+\frac{\mathbb{E}\!\left[L\,\mathbf{1}\!\left\{L\geq \operatorname{VaR}_{1-q}(L)\right\}\right]}
+{\mathbb{E}[L]}.
+\label{eq:tailshare}
+\end{equation}
+For any nonnegative loss random variable $Z$, we use the upper-tail convention
+\begin{equation}
+\cvar_q(Z)=\inf_{\eta\in\mathbb{R}}
+\left\{\eta+\frac{1}{q}\mathbb{E}\left[(Z-\eta)_+\right]\right\},
+\label{eq:cvar-definition}
+\end{equation}
+where $q$ is the fraction of outcomes in the selected worst tail. For a continuous distribution this equals $\mathbb{E}[Z\mid Z\geq\operatorname{VaR}_{1-q}(Z)]$. Thus $\cvar_{0.10}$ is the average loss in the worst 10\%, even though some literature describes the same cutoff using a 90\% confidence level.
+
+For an unknown population quantity $\theta$ estimated by $\widehat\theta$, a $(1-\delta)$ upper confidence bound is a data-dependent value satisfying
+\begin{equation}
+\Pr\!\left(\theta\leq \ucb_{1-\delta}(\widehat\theta)\right)\geq 1-\delta
+\label{eq:ucb-definition}
+\end{equation}
+under the registered sampling assumptions. The paper uses a UCB because security loss is undesirable: uncertainty should increase the assessed risk rather than be interpreted as evidence of safety. Simultaneous comparison across many stacks and scenarios requires multiplicity-aware bounds.
+
+For example, $S(0.10)>0.5$ means that the worst 10\% of trajectories contribute more than half of measured aggregate harm. This is an empirical hypothesis, not a consequence of using CVaR. CVaR measures average severity within the selected tail; $S(q)$ measures how much of total harm that tail contributes. In a two-component mixture with catastrophic-event probability $p$, catastrophic loss $L_{\mathrm{cat}}$, and routine loss $L_{\mathrm{routine}}$, the rare component contributes most expected harm only when
+\[
+\frac{L_{\mathrm{cat}}}{L_{\mathrm{routine}}}>\frac{1-p}{p}.
+\]
+Thus rarity alone is insufficient.
+
+Layered harm reduction is likewise not automatically exponential. Let $g$ index attack scenario families and let $b_{ig}\in[0,1]$ be the fraction of harm in family $g$ that bypasses defense layer $i$. Under a conditional multiplicative-bypass approximation, residual harm after $m$ layers is
+\begin{equation}
+H_m=\sum_g P(g)\,\mathbb{E}[L\mid g]\prod_{i=1}^{m}b_{ig}.
+\label{eq:layeredharm}
+\end{equation}
+The geometric special case $H_m=H_0b^m$ requires approximately independent layer failures and a stable bypass fraction $b$ across the remaining threat distribution. Correlated or nested failures can make an additional layer nearly redundant, while attacker adaptation can redirect loss into a different scenario family. The experiments must therefore estimate both tail concentration $S(q)$ and matched failure overlap rather than assuming either tail dominance or multiplicative protection.
+
 \section{The Conjecture}
-Let $\pi$ denote a defense stack, $U(\pi)$ its task utility, $T(\pi)$ its latency, and $L(\pi,x)$ the security loss in attack cell $x$. A risk-sensitive selector is
+Let $\pi$ denote a defense stack, $U(\pi)$ its task utility, $T(\pi)$ its latency, and $L(\pi,x)$ the security loss in attack scenario $x$. A risk-sensitive selector is
 \begin{equation}
 \pi^*=\arg\min_{\pi:U(\pi)\ge u_{\min}}
 \left[
-\lambda\max_{x\in\mathcal{X}}\ucb\{\cvar_q[L(\pi,x)]\}
+\lambda\max_{x\in\mathcal{X}}\ucb_{1-\delta}\{\cvar_q[L(\pi,x)]\}
 +(1-\lambda)\cvar_q[L(\pi,X)]
 +\mu T(\pi)
 \right].
 \label{eq:selector}
 \end{equation}
-The outer maximum prevents pooled performance from hiding a vulnerable cell. Cell-wise CVaR focuses on the severe tail within that cell. The UCB penalizes uncertainty, while the pooled term stabilizes selection when cell estimates are noisy. Utility is a constraint rather than a soft afterthought.
-Here $\cvar_q$ denotes the mean loss in the worst $q$ fraction of outcomes; the registered experiments use $q=0.10$.
+Here $\pi$ is one complete defense stack; $x$ is one registered attack scenario; and $X$ is a random scenario drawn from a preregistered weighting distribution over $\mathcal{X}$. The random variable $L(\pi,x)$ is trajectory-level security loss, not a pre-averaged scalar. $U(\pi)$ is benign task utility, $u_{\min}$ is its required floor, and $T(\pi)$ is normalized latency or operational cost. The weight $\lambda\in[0,1]$ trades worst-scenario protection against pooled tail performance, while $\mu\geq0$ is the exchange rate applied to operational cost. The confidence error $\delta$ fixes the UCB coverage level. All weights, normalizations, scenario weights, and confidence levels are frozen using calibration or validation data before test manifests are opened.
+
+The outer maximum prevents pooled performance from hiding a vulnerable scenario. Scenario-wise CVaR focuses on the severe tail within that scenario. The UCB penalizes uncertainty, while the pooled term stabilizes selection when scenario estimates are noisy. Utility is a constraint rather than a soft afterthought. The registered experiments use $q=0.10$.
 
 Equation~\ref{eq:selector} alone is not novel and can select redundant layers. We therefore require a failure-geometry condition. For two component defenses $A$ and $B$, evaluated on matched opportunities,
 \begin{equation}
@@ -152,16 +190,16 @@ Sequential monitoring & Same pinned 7B model & 2 & Randomized onset; low-rate, d
 \end{table*}
 
 \paragraph{E01 - selector contrast.}
-Compare pooled mean, pooled CVaR, worst-cell mean, hierarchical tail, and UCB-tail selectors. Success requires a frozen practical improvement over the strongest registered baseline.
+Compare pooled mean, pooled CVaR, worst-scenario mean, hierarchical tail, and UCB-tail selectors. Success requires a frozen practical improvement over the strongest registered baseline.
 
 \paragraph{E02 - failure complementarity.}
 Evaluate singleton bypasses on matched opportunities, compute $\Gamma$, enforce the stack, and report realized gain and $\Delta_{\mathrm{int}}$.
 
 \paragraph{E03 - adaptive persistence.}
-Compare diverse and homogeneous stacks under registered adaptive cells. Full confirmation requires autonomous, stack-specific, equal-budget LLM best response and fresh-seed diagonal evaluation; that component is not yet implemented.
+Compare diverse and homogeneous stacks under registered adaptive scenarios. Full confirmation requires autonomous, stack-specific, equal-budget LLM best response and fresh-seed diagonal evaluation; that component is not yet implemented.
 
 \paragraph{E04 - held-out transfer.}
-Test whether validation $\Gamma$ predicts held-out robustness. The current labels represent synthetic model-family cells; they are not executions of distinct model families. A genuine held-out 7--9B family is still required.
+Test whether validation $\Gamma$ predicts held-out robustness. The current labels represent synthetic model-family scenarios; they are not executions of distinct model families. A genuine held-out 7--9B family is still required.
 
 \paragraph{E05 - before-harm enforcement.}
 Require lower irreversible harm, a paired lower confidence bound above zero, bounded benign false alarms, and intervention before the irreversible action.
@@ -217,12 +255,12 @@ The next study should preserve the common harness while adding three modules.
 On the same pre-defense event, fork the trajectory through each singleton and the enforced stack, holding seed and attacker action fixed. Estimate $\Gamma$, realized gain, and interaction on LLM-generated opportunities. Match diverse and homogeneous stacks on layer count, utility, and latency.
 
 \paragraph{Autonomous stack-aware attack search.}
-Expose each finalist stack to a separate attacker with identical query, token, tool, and rollout budgets. Freeze attack-search code and budgets, search on validation seeds, and evaluate only the diagonal attacker-stack pairs on fresh seeds. Success requires retained positive $\Gamma$ and a pre-specified worst-cell CVaR improvement.
+Expose each finalist stack to a separate attacker with identical query, token, tool, and rollout budgets. Freeze attack-search code and budgets, search on validation seeds, and evaluate only the diagonal attacker-stack pairs on fresh seeds. Success requires retained positive $\Gamma$ and a pre-specified worst-scenario CVaR improvement.
 
 \paragraph{Held-out model and compound transfer.}
-Qualify a genuinely different 7--9B instruction model without opening test cells. Evaluate held-out prompts, attacks, topologies, coalitions, and horizons one axis at a time, then open the compound manifest once. Regress held-out realized gain on validation $\Gamma$, component quality, utility, and latency. With more than three stacks, report uncertainty for the incremental predictive value of $\Gamma$.
+Qualify a genuinely different 7--9B instruction model without opening test scenarios. Evaluate held-out prompts, attacks, topologies, coalitions, and horizons one axis at a time, then open the compound manifest once. Regress held-out realized gain on validation $\Gamma$, component quality, utility, and latency. With more than three stacks, report uncertainty for the incremental predictive value of $\Gamma$.
 
-The operational objective is not a static leaderboard. Production traces should populate the same attack-cell schema, candidate policies should run in shadow mode, and only utility-feasible stacks should advance. A deployment controller can then select among approved stacks by the frozen tail-risk objective, while sequential drift monitoring detects when the validation geometry no longer transfers.
+The operational objective is not a static leaderboard. Production traces should populate the same attack-scenario schema, candidate policies should run in shadow mode, and only utility-feasible stacks should advance. A deployment controller can then select among approved stacks by the frozen tail-risk objective, while sequential drift monitoring detects when the validation geometry no longer transfers.
 
 \section{Related Work}
 The attack taxonomy and open challenges build on recent analyses of multi-agent security and agent benchmarks \citep{openchallenges,agentsecuritybench}. Secret collusion work demonstrates that agents can use hidden communication and motivates information-theoretic channel measures \citep{secretcollusion}. Cachin's steganographic framework formalizes security through distributional indistinguishability \citep{cachin1998}; our use of mutual information and typed capacity constraints is operational rather than a proof of perfect steganographic secrecy. CVaR provides a coherent tail-risk objective \citep{rockafellar2000}, while group DRO addresses worst-group generalization \citep{sagawa2019}. Confidence sequences and game-theoretic statistics motivate time-uniform monitoring \citep{howard2021,ramdas2023}. Our focus is the conjunction of tail selection with matched failure geometry, adaptive stack-specific testing, consequential enforcement, and immutable held-out transfer.

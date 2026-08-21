@@ -52,7 +52,7 @@ and attacker trajectory prefix.
 1. Define opportunity-aware failure for each scenario and layer.
 2. Run common-prefix continuations for each constituent and stack.
 3. Estimate marginal bypass `p_j`, joint singleton bypass `p_cap`, and `Gamma`
-   by cell.
+   by scenario.
 4. Estimate realized closed-loop stack bypass `p_pi`, realized gain
    `G = min(p_j) - p_pi`, and interaction gap `p_pi - p_cap`.
 5. Match or stratify comparisons by utility, latency, and layer count.
@@ -82,8 +82,8 @@ events, not a label inferred from component names or architecture diagrams.
 - [ ] Define cost/utility matching procedure.
 - [ ] Register homogeneous and heterogeneous candidate stacks.
 - [ ] Run primary-model pilot.
-- [ ] Freeze confirmatory cells and sample size.
-- [ ] Report cell-conditional and aggregate failure geometry.
+- [ ] Freeze confirmatory scenarios and sample size.
+- [ ] Report scenario-conditional and aggregate failure geometry.
 
 ## Definition of success
 
@@ -97,7 +97,7 @@ stack has:
   ensemble on a `[0,1]` probability scale;
 - no violation of the frozen utility, false-alarm, or latency bounds; and
 - positive effects in more than one attack family rather than a single
-  hand-selected cell.
+  hand-selected scenario.
 
 ## Falsification criteria
 

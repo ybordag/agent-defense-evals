@@ -6,7 +6,7 @@ This canvas answers the substrate, attack, defense, data, and inference question
 
 | Study | Where / runtime | Model | Agents | Attack induction | Defense placement | Episodes | Stored evidence |
 |---|---|---|---:|---|---|---:|---|
-| Controlled E01-E05 | Repository harness; deterministic simulator | None | Simulated roles | Registered probability fixtures over attack cells and stacks | Simulated | 2,400 | Full per-trajectory validation and test outcomes |
+| Controlled E01-E05 | Repository harness; deterministic simulator | None | Simulated roles | Registered probability fixtures over attack scenarios and stacks | Simulated | 2,400 | Full per-trajectory validation and test outcomes |
 | Capacity canary | `spark-thor`; vLLM OpenAI-compatible endpoint | Qwen2.5-7B-Instruct, revision `a09a35458c702b33eeacc393d103063234e8bc28` | 2 | Supplied two-bit codebook; fixed and semantic adaptations | Online message gateway | 64 | Aggregate report plus trace-complete fresh rerun with events/model outputs |
 | Workflow canary | `spark-thor`; same vLLM endpoint | Same pinned 7B model | 6 roles | Registered planner/reviewer manipulation | Online action gateway | 24 | Aggregate report plus trace-complete fresh rerun with events/model outputs |
 | Sequential monitoring | `spark-thor`; model traces evaluated by repository monitors | Same pinned 7B model | 2 | Randomized onset; low-rate, delayed, memory, and reward objectives | Offline after generation | 900 x 100 turns | 48 split shards with per-episode scores and trace hashes; full generations not retained |
@@ -15,9 +15,9 @@ This canvas answers the substrate, attack, defense, data, and inference question
 
 | Question | Primary endpoint | Statistical treatment | Current result | Claim boundary |
 |---|---|---|---|---|
-| Does tail selection beat ordinary selectors? | Worst-cell worst-decile CVaR | DKW upper bound; frozen selector comparison | No contrast: all selectors chose the same stack | E01 is not supported |
+| Does tail selection beat ordinary selectors? | Worst-scenario worst-decile Conditional Value at Risk (CVaR) | DKW upper bound; frozen selector comparison | No contrast: all selectors chose the same stack | E01 is not supported |
 | Do diverse layers fail on different opportunities? | `Gamma = best singleton bypass - joint singleton bypass` | Matched opportunities | `Gamma = 0.406`; realized gain `0.381` | Controlled synthetic only |
-| Does complementarity survive adaptation? | Adaptive worst-cell CVaR and retained Gamma | Registered adaptive cells | `0.93` vs `1.00`; retained Gamma `0.205` | No autonomous stack-specific LLM best response yet |
+| Does complementarity survive adaptation? | Adaptive worst-scenario CVaR and retained Gamma | Registered adaptive scenarios | `0.93` vs `1.00`; retained Gamma `0.205` | No autonomous stack-specific LLM best response yet |
 | Does validation geometry transfer? | Spearman correlation of validation Gamma with held-out robustness | Rank diagnostic | `rho = 0.866` across three synthetic stacks | Not confirmatory; no genuinely held-out model execution |
 | Can enforcement stop harm before it is irreversible? | Harm rate and before-harm intervention | Wilson intervals; paired Hoeffding lower bound | Simulated harm `0.725 -> 0.025`; before-harm `0.95` | Controlled synthetic only |
 | Can a channel defense survive semantic adaptation? | Attack success, mutual information, exact utility | Wilson intervals; empirical MI | Paraphrase: `1.00 -> 0.25`; adaptation returns `1.00`; typed mediator returns `0.25`; utility `1.00` | One supplied codebook and one model |
@@ -55,8 +55,8 @@ Only capacity and workflow currently deploy the defense alongside the agents. Th
 | Missing experiment | Required implementation | Definition of success |
 |---|---|---|
 | Model-backed complementarity | Shadow-fork the same LLM-generated opportunity through each singleton and the enforced stack | Positive matched Gamma, bounded interaction gap, and lower realized bypass than cost-matched homogeneous stacks |
-| Autonomous stack-aware best response | Separate attacker search against every finalist under identical query/token/tool/rollout budgets; fresh-seed diagonal evaluation | Diverse-stack worst-cell CVaR advantage survives adaptation by a frozen margin |
-| Discriminative selector study | Expand stacks and cells until credible selectors can choose differently | Proposed selector beats the strongest registered baseline without violating utility or latency constraints |
+| Autonomous stack-aware best response | Separate attacker search against every finalist under identical query/token/tool/rollout budgets; fresh-seed diagonal evaluation | Diverse-stack worst-scenario CVaR advantage survives adaptation by a frozen margin |
+| Discriminative selector study | Expand stacks and scenarios until credible selectors can choose differently | Proposed selector beats the strongest registered baseline without violating utility or latency constraints |
 | Genuine held-out transfer | Qualify and freeze a different capable 7-9B model family, then open single-axis and compound manifests once | Validation Gamma adds predictive value beyond component quality, utility, and latency |
 | Online Phase 5 enforcement | Connect monitors to an action gateway and define irreversible actions | Lower realized harm at the registered lifetime false-alarm bound |
 
