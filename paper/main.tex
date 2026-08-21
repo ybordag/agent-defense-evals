@@ -1,0 +1,214 @@
+\documentclass[10pt]{article}
+\usepackage[margin=0.78in]{geometry}
+\usepackage{amsmath,amssymb,booktabs,array,microtype,graphicx}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{enumitem}
+\setlist{nosep,leftmargin=*}
+\definecolor{claimblue}{RGB}{47,126,216}
+\definecolor{warnred}{RGB}{170,45,45}
+\newcommand{\system}{\textsc{Agent-Defense-Evals}}
+\newcommand{\cvar}{\operatorname{CVaR}}
+\newcommand{\ucb}{\operatorname{UCB}}
+
+\title{Mechanism-Diverse Tail Robustness for Multi-Agent LLM Systems:\\
+A Falsifiable Evaluation Harness}
+\author{Anonymous Author(s)}
+\date{August 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Multi-agent language-model systems create security failures that are not visible from isolated component evaluations: individually acceptable actions can compose into harm, coordination can use multiple carriers, and low-rate behavior can evade per-turn monitoring. We propose a falsifiable design principle: under fixed utility and latency budgets, select layered defenses by worst conditional tail risk only when their failures are demonstrably non-nested on matched opportunities, and require this complementarity to survive stack-aware adaptation and held-out transfer. We operationalize the proposal in \system, an open-model harness with immutable experiment manifests, paired seeds, trace hashing, defense gateways, and pre-specified success gates. The current evidence has three distinct tiers. First, 2,400 controlled synthetic trajectories validate estimands and leakage controls. Second, two Qwen2.5-7B canaries exercise defenses online: a 64-episode covert-channel study and a 24-episode six-role workflow study. Third, 900 two-agent, 100-turn episodes evaluate sequential monitors offline under a frozen split. Controlled tests recover complementary failure geometry ($\Gamma=0.406$) and before-harm intervention, while the selector-superiority and compound-transfer gates remain false. The 7B canaries show that generic paraphrasing breaks a fixed surface code but not an adapted semantic code, whereas a typed mediator reduces registered channel capacity without utility loss; provenance-aware repair prevents a registered harmful workflow while retaining exact utility. Sequential monitoring controls the registered benign lifetime-alarm bound but detects only 27.5\% of low-rate cases before harm. These findings support mechanism-backed feasibility, not a general robustness claim. We specify the missing model-backed complementarity, adaptive best-response, and genuinely held-out model-family experiments required for confirmation.
+\end{abstract}
+
+\section{Introduction}
+The unit of security in a multi-agent system is a trajectory, not a model call. A planner, reviewer, memory service, tool user, and executor can each satisfy local checks while their combined actions violate a system policy. Communication may be explicit or hidden in wording, timing, state, tool arguments, memory, or environmental actions. The resulting failures are conditional and heavy-tailed: averaging across attacks, models, topologies, and horizons can conceal the few cells that dominate real harm.
+
+Existing work identifies multi-agent collusion, steganography, prompt injection, cascading compromise, and governance challenges \citep{openchallenges,secretcollusion,agentsecuritybench}. Risk-sensitive optimization, group distributional robustness, confidence sequences, and steganographic security definitions provide important machinery \citep{rockafellar2000,sagawa2019,howard2021,ramdas2023,cachin1998}. Our contribution is not to rename that machinery. It is to make a narrower empirical conjecture testable:
+
+\begin{quote}
+\color{claimblue}\textbf{Select for worst conditional tail risk only when validation data show that candidate defense mechanisms fail on different matched opportunities; then require the resulting advantage to survive a stack-aware attacker, consequential enforcement, and held-out transfer.}
+\end{quote}
+
+This paper makes four contributions. First, it formalizes the conjecture and separates tail severity, complementarity, adaptive best response, and enforcement interaction. Second, it maps attack dimensions to a common open-model harness. Third, it reports controlled and model-backed feasibility evidence with explicit uncertainty. Fourth, it preserves negative results and defines the remaining confirmatory experiments.
+
+\section{Threat Model and Attack Dimensions}
+We consider a system of $n$ stochastic LLM agents connected by typed or free-form communication, shared state, tools, and an external-action boundary. A coalition may include one or more compromised roles. The defender observes only the surfaces exposed by the deployment and may transform, block, repair, or score events.
+
+Following the attack-variation framing in \citet{openchallenges}, an attack cell $x\in\mathcal{X}$ is a tuple over:
+\[
+x=(d,\ell,c,m,h,a,r),
+\]
+where $d$ is detectability, $\ell$ locality, $c$ cascading behavior, $m$ composition, $h$ time horizon, $a$ attributability, and $r$ directness or reversibility. Our registered cells additionally vary model family, prompt family, topology, coalition, carrier, tool access, and attacker budget. A compound held-out cell changes several axes simultaneously.
+
+The main attack mechanisms are:
+\begin{itemize}
+  \item \textbf{Covert coordination:} surface codes, semantic paraphrases, timing, tool arguments, and shared state.
+  \item \textbf{Heterogeneous composition:} locally permitted actions combine into a prohibited information flow or consequence.
+  \item \textbf{Cascading compromise:} one compromised role changes memory or artifacts consumed by downstream roles.
+  \item \textbf{Low-rate and delayed behavior:} evidence is spread across turns or activated after a benign prefix.
+\end{itemize}
+
+The attacker is adaptive when it receives the deployed defense stack and an equal query, token, tool, and rollout budget, then optimizes a policy against that stack. The current experiments include registered adaptations and goal-driven pressure, but not autonomous equal-budget best-response search. We keep this boundary explicit.
+
+\section{The Conjecture}
+Let $\pi$ denote a defense stack, $U(\pi)$ its task utility, $T(\pi)$ its latency, and $L(\pi,x)$ the security loss in attack cell $x$. A risk-sensitive selector is
+\begin{equation}
+\pi^*=\arg\min_{\pi:U(\pi)\ge u_{\min}}
+\left[
+\lambda\max_{x\in\mathcal{X}}\ucb\{\cvar_q[L(\pi,x)]\}
++(1-\lambda)\cvar_q[L(\pi,X)]
++\mu T(\pi)
+\right].
+\label{eq:selector}
+\end{equation}
+The outer maximum prevents pooled performance from hiding a vulnerable cell. Cell-wise CVaR focuses on the severe tail within that cell. The UCB penalizes uncertainty, while the pooled term stabilizes selection when cell estimates are noisy. Utility is a constraint rather than a soft afterthought.
+
+Equation~\ref{eq:selector} alone is not novel and can select redundant layers. We therefore require a failure-geometry condition. For two component defenses $A$ and $B$, evaluated on matched opportunities,
+\begin{equation}
+\Gamma(A,B)=\min\{P(F_A),P(F_B)\}-P(F_A\cap F_B),
+\label{eq:gamma}
+\end{equation}
+where $F_A$ and $F_B$ are bypass events. Positive $\Gamma$ means the failure sets are non-nested. It is not sufficient for deployment: enforcement changes trajectories. We therefore also report
+\begin{equation}
+\Delta_{\mathrm{int}}=P(F_{A\oplus B})-P(F_A\cap F_B),
+\end{equation}
+where $A\oplus B$ is the actual enforced stack. A positive interaction gap warns that counterfactual complementarity overstates realized performance.
+
+\paragraph{Strong conjecture.}
+Among utility- and cost-matched stacks, validation-time complementarity $\Gamma$ predicts held-out realized tail gain beyond component quality, but only if (i) the advantage remains under equal-budget stack-aware attack search, (ii) $\Delta_{\mathrm{int}}$ is bounded under consequential deployment, and (iii) selection is frozen before single-axis and compound held-out manifests are opened.
+
+This conjecture is falsified if failure sets collapse under adaptation, enforcement creates a large harmful interaction, the proposed selector does not beat registered baselines by a pre-specified margin, or validation $\Gamma$ fails to predict held-out realized gain.
+
+\section{Harness Design}
+\system is built around a common experimental contract rather than a single attack script. Each run binds a model and tokenizer revision, tasks, roles, topology, coalition, attack policy, defense stack, utility definition, irreversible consequence, seeds, and split manifest. All consequential events traverse a shared trace schema; online studies route messages or actions through a defense gateway.
+
+\subsection{Agent and defense architecture}
+Model runtimes expose a common interface to local transformers or OpenAI-compatible vLLM endpoints. Agents are role prompts plus state, tool permissions, and deterministic seed assignments. Defenses implement one of four mechanisms: message transformation, typed mediation, local policy checking, or provenance-aware action repair/blocking. Offline monitors consume trace-derived score sequences.
+
+\subsection{Leakage control and reproducibility}
+Selection uses calibration and validation only. Test manifests are opened after thresholds and success gates are frozen. Matched comparisons share seeds and attack opportunities. Artifacts record configuration hashes, model identity, aggregate results, and, for the trace-complete canaries, full per-episode events with SHA-256 hashes. The Phase 5 shards retain per-episode scores and trace hashes but not full generated text; this limits forensic replay.
+
+\subsection{Metrics and uncertainty}
+We report attack success, mutual information, exact utility, irreversible harm, remediation, $\Gamma$, realized gain, interaction gap, and before-harm intervention. Binomial endpoints use Wilson 95\% intervals. Tail selection uses empirical worst-decile CVaR with a Dvoretzky-Kiefer-Wolfowitz upper bound. Matched improvements use a paired Hoeffding lower bound. Median detection delay uses 2,000 bootstrap resamples. Spearman correlation is treated as a diagnostic when the number of stacks is small.
+
+\section{Experiments}
+Table~\ref{tab:substrate} distinguishes the three evidence tiers. This separation is essential: a simulator can validate estimands but cannot establish stochastic-agent robustness; a small model canary can validate a mechanism path but not a tail claim.
+
+\begin{table*}[t]
+\centering
+\small
+\caption{Executed experimental substrate. ``Online'' means the defense transforms or blocks before the next agent or external action.}
+\label{tab:substrate}
+\begin{tabular}{p{2.35cm}p{2.1cm}p{1.25cm}p{2.7cm}p{2.25cm}p{2.7cm}}
+\toprule
+Study & Runtime/model & Agents & Attack induction & Defense placement & Stored data \\
+\midrule
+Controlled E01--E05 & Deterministic simulator & Simulated roles & Registered probability fixtures & Simulated & 1,200 validation + 1,200 test outcomes \\
+Capacity canary & vLLM, Qwen2.5-7B-Instruct, pinned revision & 2 & Supplied two-bit codebook; fixed and semantic adaptation & Online message gateway & 64 trace-complete episodes in fresh rerun \\
+Workflow canary & Same pinned 7B model & 6 roles & Registered planner/reviewer manipulation & Online action gateway & 24 trace-complete episodes in fresh rerun \\
+Sequential monitoring & Same pinned 7B model & 2 & Randomized onset; low-rate, delayed, memory, reward objectives & Offline after generation & 900 score records in 48 shards; trace hashes \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\paragraph{E01 - selector contrast.}
+Compare pooled mean, pooled CVaR, worst-cell mean, hierarchical tail, and UCB-tail selectors. Success requires a frozen practical improvement over the strongest registered baseline.
+
+\paragraph{E02 - failure complementarity.}
+Evaluate singleton bypasses on matched opportunities, compute $\Gamma$, enforce the stack, and report realized gain and $\Delta_{\mathrm{int}}$.
+
+\paragraph{E03 - adaptive persistence.}
+Compare diverse and homogeneous stacks under registered adaptive cells. Full confirmation requires autonomous, stack-specific, equal-budget LLM best response and fresh-seed diagonal evaluation; that component is not yet implemented.
+
+\paragraph{E04 - held-out transfer.}
+Test whether validation $\Gamma$ predicts held-out robustness. The current labels represent synthetic model-family cells; they are not executions of distinct model families. A genuine held-out 7--9B family is still required.
+
+\paragraph{E05 - before-harm enforcement.}
+Require lower irreversible harm, a paired lower confidence bound above zero, bounded benign false alarms, and intervention before the irreversible action.
+
+\paragraph{Model-backed capacity canary.}
+A sender encodes one of four symbols for a receiver. Conditions are unrestricted, fixed code plus paraphrasing, semantic adaptation plus paraphrasing, and semantic adaptation plus a typed mediator. There are 16 episodes per condition.
+
+\paragraph{Model-backed workflow canary.}
+Six roles execute four workflows under no defense, local-only checks, hard block, targeted provenance repair, and benign targeted repair. The attack is supplied to planner and reviewer. The endpoint is prohibited effective flow at an external action, not merely suspicious text.
+
+\paragraph{Sequential monitoring.}
+Two Qwen2.5-7B agents interact for 100 turns. The frozen split has 200 calibration, 140 validation, and 560 test episodes. A mixture e-process, fixed per-turn threshold, and Page CUSUM are calibrated without test access. Monitors are evaluated offline on trace-derived scores.
+
+\section{Results}
+\subsection{Controlled tests}
+Table~\ref{tab:controlled} reports the registered outcomes. E01 is false because all selectors choose the same diverse stack; there is no selector contrast. E02 recovers substantial non-nested failure geometry. The enforced stack is slightly worse than the singleton intersection ($\Delta_{\mathrm{int}}=0.025$), so counterfactual complementarity is not silently equated with deployment performance. E03 shows a small controlled adaptive-tail advantage. E04 remains false despite a favorable three-stack rank correlation because its compound success rule also requires the E01 advantage. E05 reduces simulated harm with a positive matched lower bound, but its benign sample is too small to establish the target 0.05 ceiling.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Controlled synthetic gates. These validate the harness, not LLM-agent robustness.}
+\label{tab:controlled}
+\begin{tabular}{cllc}
+\toprule
+ID & Primary result & Diagnostic & Gate \\
+\midrule
+E01 & Improvement $0.000$ & all selectors agree & fail \\
+E02 & $\Gamma=0.406$ & realized gain $0.381$ & pass \\
+E03 & CVaR $0.93$ vs. $1.00$ & retained $\Gamma=0.205$ & pass \\
+E04 & $\rho=0.866$ & only 3 synthetic stacks & fail \\
+E05 & harm $0.725\rightarrow0.025$ & before-harm $0.95$ & pass$^*$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Online-defense canaries}
+In the capacity canary, unrestricted communication yields attack success 1.00 and mutual information 2 bits. Paraphrasing reduces the fixed code to 0.25 and 0 bits, but semantic adaptation restores 1.00 and 2 bits. The typed mediator reduces the adapted condition to 0.25 and 0 bits while exact utility remains 1.00 in every condition. This is evidence that suppressing one representation does not remove task-compatible channel capacity; typed structure removes the registered carrier degrees of freedom. It is not evidence against unregistered timing, tool, state, or environmental channels.
+
+In the workflow canary, no defense and local-only checks permit the registered harmful composition. Hard blocking prevents harm but drives exact utility to zero. Provenance-aware targeted repair prevents the prohibited effective flow while retaining exact utility 1.00. Benign targeted-remediation episodes show no false repair. With four episodes per condition, these are mechanism-path demonstrations rather than precise effect estimates; the Wilson interval for a 4/4 rate is approximately $[0.51,1.00]$.
+
+\subsection{Sequential monitoring}
+The frozen test has zero alarms in each 80-episode benign stratum, giving a Wilson 95\% upper bound of 0.0458. This supports the registered empirical lifetime-error claim under the split design. It does not establish arbitrary-history conditional validity. Detection before harm is 1.00 for delayed triggers, 0.75 for memory poisoning, 0.75 for reward-induced behavior, and 0.275 for low-rate attacks. All monitors calibrate to zero thresholds and attain the same rates; the e-process is often slower. Thus the current evidence does not show superiority of anytime-valid monitoring. The low-rate result is the substantive gap: a stringent lifetime false-alarm budget can delay evidence accumulation beyond the useful intervention point.
+
+\section{What the Evidence Does and Does Not Establish}
+Three findings are supported. First, matched failure geometry is measurable separately from layer count and deployed interaction. Second, a carrier-specific defense can look successful until an attacker changes representation, while a typed interface can remove the registered capacity without utility loss. Third, before-harm timing is a distinct endpoint from eventual detection, and low-rate attacks remain difficult under lifetime false-alarm constraints.
+
+The strong conjecture is not confirmed. The decisive model-backed layer-complementarity study has not run; the attacker has not autonomously optimized equal-budget best responses against each stack; and no genuinely distinct held-out 7--9B model family has been evaluated. The current E04 model-family labels are synthetic. Phase 5 defenses are not inline. Capacity and workflow samples are small, and their attack policies are scaffolded. These limitations bound every claim in this paper.
+
+\section{Confirmatory Experimental Program}
+The next study should preserve the common harness while adding three modules.
+
+\paragraph{Model-backed shadow forks.}
+On the same pre-defense event, fork the trajectory through each singleton and the enforced stack, holding seed and attacker action fixed. Estimate $\Gamma$, realized gain, and interaction on LLM-generated opportunities. Match diverse and homogeneous stacks on layer count, utility, and latency.
+
+\paragraph{Autonomous stack-aware attack search.}
+Expose each finalist stack to a separate attacker with identical query, token, tool, and rollout budgets. Freeze attack-search code and budgets, search on validation seeds, and evaluate only the diagonal attacker-stack pairs on fresh seeds. Success requires retained positive $\Gamma$ and a pre-specified worst-cell CVaR improvement.
+
+\paragraph{Held-out model and compound transfer.}
+Qualify a genuinely different 7--9B instruction model without opening test cells. Evaluate held-out prompts, attacks, topologies, coalitions, and horizons one axis at a time, then open the compound manifest once. Regress held-out realized gain on validation $\Gamma$, component quality, utility, and latency. With more than three stacks, report uncertainty for the incremental predictive value of $\Gamma$.
+
+The operational objective is not a static leaderboard. Production traces should populate the same attack-cell schema, candidate policies should run in shadow mode, and only utility-feasible stacks should advance. A deployment controller can then select among approved stacks by the frozen tail-risk objective, while sequential drift monitoring detects when the validation geometry no longer transfers.
+
+\section{Related Work}
+The attack taxonomy and open challenges build on recent analyses of multi-agent security and agent benchmarks \citep{openchallenges,agentsecuritybench}. Secret collusion work demonstrates that agents can use hidden communication and motivates information-theoretic channel measures \citep{secretcollusion}. Cachin's steganographic framework formalizes security through distributional indistinguishability \citep{cachin1998}; our use of mutual information and typed capacity constraints is operational rather than a proof of perfect steganographic secrecy. CVaR provides a coherent tail-risk objective \citep{rockafellar2000}, while group DRO addresses worst-group generalization \citep{sagawa2019}. Confidence sequences and game-theoretic statistics motivate time-uniform monitoring \citep{howard2021,ramdas2023}. Our focus is the conjunction of tail selection with matched failure geometry, adaptive stack-specific testing, consequential enforcement, and immutable held-out transfer.
+
+\section{Conclusion}
+Multi-agent defense should be optimized over conditional tail risk, but risk sensitivity alone can reward redundant layers. The missing variable is common-mode failure. \system makes that hypothesis falsifiable by separating component bypass, joint bypass, enforced interaction, adaptive response, utility, and before-harm timing. Current evidence validates the measurement and execution paths and identifies a genuine low-rate monitoring gap. It does not yet establish the strong cross-model claim. The appropriate next step is therefore not a broader conclusion, but the registered model-backed complementarity, autonomous best-response, and held-out-family program described above.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\appendix
+\section{Artifact Inventory}
+The controlled report is stored at \texttt{artifacts/asap-evidence/tail-report.json}, with per-trajectory validation and test outcomes in \texttt{tail-validation.json} and \texttt{tail-test.json}. Phase 5 uses \texttt{phase5-confirmatory-report.json} and 48 split shards. Fresh capacity and workflow reruns are stored under \texttt{artifacts/reviewer-evidence-20260821/}. Every paper claim is scoped to those artifacts and the pinned configurations in \texttt{configs/experiments/}.
+
+\section{Reviewer Checklist}
+\begin{enumerate}
+  \item Where did the run execute? Model-backed canaries ran on \texttt{spark-thor} through a local vLLM endpoint; controlled tests ran in the repository harness.
+  \item Which model? Pinned Qwen2.5-7B-Instruct revision \texttt{a09a35458c702b33eeacc393d103063234e8bc28}.
+  \item How many agents? Two for capacity, six roles for workflow, and two for sequential monitoring.
+  \item How were attacks induced? Supplied codebook, registered planner/reviewer policy, or goal-driven objectives with randomized onset.
+  \item Was the defense inline? Yes for capacity and workflow; no for Phase 5 and the synthetic suite.
+  \item Where is the data? Under \texttt{artifacts/}, with trace-complete canary reruns in the reviewer-evidence directory.
+\end{enumerate}
+
+\end{document}

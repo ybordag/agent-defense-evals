@@ -30,3 +30,7 @@ artifacts/*
 # Local model and deployment configuration
 configs/local*.yaml
 *.log
+
+# Local artifact-authoring intermediates
+.tmp/
+*.pptx.inspect.ndjson
