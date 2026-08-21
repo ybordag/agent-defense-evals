@@ -3,6 +3,10 @@
 \usepackage{amsmath,amssymb,booktabs,array,microtype,graphicx}
 \usepackage{xcolor}
 \usepackage[hidelinks]{hyperref}
+\hypersetup{
+  pdftitle={Mechanism-Diverse Tail Robustness for Multi-Agent LLM Systems: A Falsifiable Evaluation Harness},
+  pdfauthor={Yashila Bordag}
+}
 \usepackage[numbers,sort&compress]{natbib}
 \usepackage{enumitem}
 \setlist{nosep,leftmargin=*}
@@ -14,7 +18,7 @@
 
 \title{Mechanism-Diverse Tail Robustness for Multi-Agent LLM Systems:\\
 A Falsifiable Evaluation Harness}
-\author{Anonymous Author(s)}
+\author{Yashila Bordag}
 \date{August 2026}
 
 \begin{document}
@@ -40,9 +44,9 @@ We consider a system of $n$ stochastic LLM agents connected by typed or free-for
 
 Following the attack-variation framing in \citet{openchallenges}, an attack cell $x\in\mathcal{X}$ is a tuple over:
 \[
-x=(d,\ell,c,m,h,a,r),
+x=(d,\ell,c,m,h,a,r,v),
 \]
-where $d$ is detectability, $\ell$ locality, $c$ cascading behavior, $m$ composition, $h$ time horizon, $a$ attributability, and $r$ directness or reversibility. Our registered cells additionally vary model family, prompt family, topology, coalition, carrier, tool access, and attacker budget. A compound held-out cell changes several axes simultaneously.
+where $d$ is detectability, $\ell$ locality, $c$ cascading behavior, $m$ composition, $h$ time horizon, $a$ attributability, $r$ directness, and $v$ reversibility. Our registered cells additionally vary model family, prompt family, topology, coalition, carrier, tool access, and attacker budget. A compound held-out cell changes several axes simultaneously.
 
 The main attack mechanisms are:
 \begin{itemize}
@@ -66,6 +70,7 @@ Let $\pi$ denote a defense stack, $U(\pi)$ its task utility, $T(\pi)$ its latenc
 \label{eq:selector}
 \end{equation}
 The outer maximum prevents pooled performance from hiding a vulnerable cell. Cell-wise CVaR focuses on the severe tail within that cell. The UCB penalizes uncertainty, while the pooled term stabilizes selection when cell estimates are noisy. Utility is a constraint rather than a soft afterthought.
+Here $\cvar_q$ denotes the mean loss in the worst $q$ fraction of outcomes; the registered experiments use $q=0.10$.
 
 Equation~\ref{eq:selector} alone is not novel and can select redundant layers. We therefore require a failure-geometry condition. For two component defenses $A$ and $B$, evaluated on matched opportunities,
 \begin{equation}
