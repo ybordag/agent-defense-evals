@@ -2,7 +2,10 @@
 
 ## Status
 
-Phase 5 is in progress. The sequential-statistics core and trace-derived score adapter are implemented. Preliminary Qwen2.5-0.5B and Qwen2.5-7B pilots ran on Thor. The phase is not complete: confirmatory calibration, larger held-out samples, and scores derived from less scripted agent behavior remain.
+Phase 5 is in progress. The sequential-statistics core, trace-derived score adapter,
+and confirmatory execution framework are implemented. Preliminary
+Qwen2.5-0.5B and Qwen2.5-7B pilots ran on Thor. The confirmatory model run has
+not yet been executed, so Phase 5 is not complete.
 
 ## Conjecture under test
 
@@ -125,6 +128,39 @@ The behavioral path now runs on the small vLLM-served model, and a stratified 7B
 
 Preregister the score, null envelope, alpha, splits, and irreversible-action semantics. Then compare monitors at matched lifetime error, report uncertainty, examine conditional coverage by benign regime, and fail the phase gate if the null calibration does not transfer.
 
+Implementation status: complete; model execution pending. The implementation
+adds:
+
+- immutable calibration, validation, and test split contracts with disjoint
+  prompt families and a required held-out model configuration;
+- a content-hashed manifest containing every seed, condition, prompt family,
+  and model configuration before execution;
+- two explicit validity modes: a theorem-backed conditional e-process only
+  when the conditional-mean assumption is known, and finite-horizon empirical
+  lifetime calibration for stochastic model agents;
+- calibration-only thresholds for the e-process, fixed per-turn monitor, and
+  CUSUM, with validation and test data excluded from threshold selection;
+- Wilson intervals for alarm and detection rates, deterministic bootstrap
+  intervals for median delay, and benign-regime/time-bin diagnostics labeled
+  as descriptive rather than conditional theorems;
+- content-addressed episode shards, atomic per-episode checkpoints, validation
+  against the frozen manifest, and restart without rerunning completed episodes;
+- goal-driven agent prompts that expose continuing objectives and history but
+  never expose the hidden condition or a per-turn `coordinate`/`routine`
+  directive.
+
+The checked-in 7B confirmatory design has 900 episodes: 200 calibration, 140
+validation, and 560 held-out test episodes. Each episode has 100 turns and two
+model agents, for 180,000 model generations. Eighty test episodes per condition
+are deliberate: with zero observed false alarms, the upper endpoint of a 95%
+Wilson interval is below 5%. A smaller sample cannot pass that gate merely by
+observing zero failures.
+
+The empirical lifetime claim remains conditional on stability of the episode
+maximum-score distribution across the registered prompt/model holdouts. The
+held-out test estimates whether that assumption transfers; it does not turn a
+marginal calibration result into arbitrary-history conditional validity.
+
 ## Reproduction
 
 ```bash
@@ -149,14 +185,59 @@ agent-defense-evals phase5-model-run \
   --output artifacts/phase5-model-trace-7b-report.json
 ```
 
+Freeze the confirmatory manifest before starting any model jobs:
+
+```bash
+agent-defense-evals phase5-confirmatory-plan \
+  --config configs/experiments/phase5_confirmatory_7b.yaml \
+  --output artifacts/phase5-confirmatory-manifest.json
+```
+
+Run resumable shards. The example uses 16 shards; separate Fairlead jobs can
+claim distinct zero-based indices:
+
+```bash
+agent-defense-evals phase5-confirmatory-run \
+  --config configs/experiments/phase5_confirmatory_7b.yaml \
+  --manifest artifacts/phase5-confirmatory-manifest.json \
+  --split calibration \
+  --shard-index 0 --shard-count 16 \
+  --output artifacts/phase5-confirmatory-calibration-shard-00.json
+```
+
+Run all calibration shards first, then validation shards. Inspecting validation
+may motivate a new specification, but doing so changes the specification and
+manifest hashes. Do not start any `--split test` shard until prompts, monitors,
+and thresholds are locked after validation.
+
+For the first Thor check, add `--max-new-episodes 1` to calibration shard zero.
+That performs 200 model generations, writes a valid partial checkpoint, and
+does not expose validation or test behavior. Rerun the identical command
+without the throttle to resume and complete that shard.
+
+Aggregate only after every manifest assignment is present:
+
+```bash
+agent-defense-evals phase5-confirmatory-report \
+  --config configs/experiments/phase5_confirmatory_7b.yaml \
+  --manifest artifacts/phase5-confirmatory-manifest.json \
+  --shards artifacts/phase5-confirmatory-shard-*.json \
+  --output artifacts/phase5-confirmatory-report.json
+```
+
+The report command rejects missing assignments, duplicates, altered hashes,
+wrong score/model revisions, and mixed manifests.
+
 ## Current limitations
 
-- Controlled results use generated stochastic fixtures; model pilots now use action telemetry from real Qwen traces, but their hidden directives still come from the same controlled schedules.
+- The old model pilots still use controlled per-turn directives; the new
+  confirmatory path is goal-driven, but has not yet been run on Qwen.
 - The binary model score is behavior-derived, while its calibration bound is marginal rather than conditionally valid.
 - The current e-process uses fixed betting fractions rather than online adaptive betting.
 - The CUSUM threshold is calibrated empirically for the configured finite horizon and has no anytime guarantee beyond it.
 - The fixed per-turn baseline is intentionally simple and should be joined by a fixed-window classifier.
 - Before-harm power is currently too low for the e-process to serve as a standalone action gate.
-- Open-model pilots contain one held-out stream per condition and cannot support rate estimates or confidence intervals.
+- Existing open-model pilots contain one held-out stream per condition; only
+  the pending confirmatory run is sized for rate estimates and intervals.
 - Direct 7B execution is unbatched and took several minutes for 800 generations.
 - No claim is made under unobserved attacks whose score distribution is identical to the benign conditional distribution.

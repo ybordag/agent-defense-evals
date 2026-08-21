@@ -8,7 +8,9 @@ The implementation begins with scripted agents. Model downloads and GPU-backed e
 
 ## Current status
 
-Phases 0–4 are implemented. Scripted configurations cover benign collaboration, blocked action mutation, paired covert-channel evaluation, and coalition-level artifact-flow verification. Model-backed configurations cover vLLM, direct Qwen2.5-7B-Instruct execution, activation probing, causal layer replacement, and heterogeneous local-policy auditing. Phase 5, anytime-valid evidence, is the next implementation target.
+Phases 0–4 are implemented. Phase 5 now includes its confirmatory statistical
+contract, goal-driven model-agent path, and resumable sharded runner. The
+registered 7B calibration/validation/test run is pending.
 
 ## Reset decision
 
@@ -126,7 +128,11 @@ Status: complete. See [Phase 4 completion](phase-4-completion.md).
 
 ## Phase 5: Experiment 3 — anytime-valid evidence
 
-Status: in progress. The sequential-statistics foundation, trace-derived scoring, and preliminary 0.5B/7B model pilots are implemented; see [Phase 5 plan and first increment](phase-5-plan.md). Confirmatory conditional calibration and larger held-out evaluation remain.
+Status: in progress. The sequential-statistics foundation, trace-derived
+scoring, preliminary 0.5B/7B pilots, confirmatory split contract, uncertainty
+reporting, goal-driven prompts, and resumable shards are implemented; see
+[Phase 5 plan and first increment](phase-5-plan.md). The larger held-out 7B run
+and its resulting gate evaluation remain.
 
 ### Build
 
@@ -196,4 +202,6 @@ Status: in progress. The sequential-statistics foundation, trace-derived scoring
 
 ## Current implementation target
 
-Phase 5 is the next implementation increment. It will add long-horizon episodes, randomized attack onset, persistent state, streaming evidence scores, and lifetime false-alarm evaluation while retaining the common event, model, defense, and provenance interfaces established in Phases 0–4.
+The next action is a staged Phase 5 execution: a small 7B behavioral sanity
+check, the frozen validation split, and only then the full held-out test split.
+Test outcomes must not be used to change thresholds or prompts.

@@ -29,6 +29,17 @@ from agent_defense_evals.experiments.coalitional_hyperproperties import (
     CoalitionalHyperpropertySpec,
     run_coalitional_hyperproperties,
 )
+from agent_defense_evals.experiments.confirmatory_evidence import (
+    ConfirmatoryManifest,
+    ConfirmatoryShardArtifact,
+    ConfirmatorySplit,
+    build_manifest,
+    finalize_confirmatory_report,
+)
+from agent_defense_evals.experiments.confirmatory_model import (
+    ConfirmatoryExecutionSpec,
+    run_confirmatory_shard,
+)
 from agent_defense_evals.experiments.heterogeneous_policy_audit import (
     HeterogeneousPolicyAuditSpec,
     run_heterogeneous_policy_audit,
@@ -42,6 +53,13 @@ from agent_defense_evals.experiments.white_box_information import (
     run_white_box_information,
 )
 from agent_defense_evals.instrumentation.provenance import ProvenanceGraph
+
+
+def _atomic_write(path: Path, content: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(content, encoding="utf-8")
+    temporary.replace(path)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -81,6 +99,27 @@ def build_parser() -> argparse.ArgumentParser:
     phase5_model = subparsers.add_parser("phase5-model-run")
     phase5_model.add_argument("--config", type=Path, required=True)
     phase5_model.add_argument("--output", type=Path, required=True)
+
+    phase5_plan = subparsers.add_parser("phase5-confirmatory-plan")
+    phase5_plan.add_argument("--config", type=Path, required=True)
+    phase5_plan.add_argument("--output", type=Path, required=True)
+
+    phase5_confirmatory = subparsers.add_parser("phase5-confirmatory-run")
+    phase5_confirmatory.add_argument("--config", type=Path, required=True)
+    phase5_confirmatory.add_argument("--manifest", type=Path, required=True)
+    phase5_confirmatory.add_argument("--output", type=Path, required=True)
+    phase5_confirmatory.add_argument("--shard-index", type=int, default=0)
+    phase5_confirmatory.add_argument("--shard-count", type=int, default=1)
+    phase5_confirmatory.add_argument("--max-new-episodes", type=int)
+    phase5_confirmatory.add_argument(
+        "--split", choices=tuple(item.value for item in ConfirmatorySplit)
+    )
+
+    phase5_report = subparsers.add_parser("phase5-confirmatory-report")
+    phase5_report.add_argument("--config", type=Path, required=True)
+    phase5_report.add_argument("--manifest", type=Path, required=True)
+    phase5_report.add_argument("--shards", type=Path, nargs="+", required=True)
+    phase5_report.add_argument("--output", type=Path, required=True)
     return parser
 
 
@@ -172,6 +211,84 @@ def main(argv: Sequence[str] | None = None) -> None:
     if args.command == "phase5-model-run":
         spec = load_yaml(args.config, ModelTraceEvidenceSpec)
         report = run_model_trace_evidence(spec)
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(
+            report.model_dump_json(indent=2) + "\n", encoding="utf-8"
+        )
+        print(report.model_dump_json(indent=2))
+        return
+    if args.command == "phase5-confirmatory-plan":
+        spec = load_yaml(args.config, ConfirmatoryExecutionSpec)
+        manifest = build_manifest(spec.design)
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(
+            manifest.model_dump_json(indent=2) + "\n", encoding="utf-8"
+        )
+        print(
+            json.dumps(
+                {
+                    "assignments": len(manifest.assignments),
+                    "specification_sha256": manifest.specification_sha256,
+                    "manifest_sha256": manifest.manifest_sha256,
+                    "output": str(args.output),
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return
+    if args.command == "phase5-confirmatory-run":
+        spec = load_yaml(args.config, ConfirmatoryExecutionSpec)
+        manifest = ConfirmatoryManifest.model_validate_json(
+            args.manifest.read_text(encoding="utf-8")
+        )
+        existing = (
+            ConfirmatoryShardArtifact.model_validate_json(
+                args.output.read_text(encoding="utf-8")
+            )
+            if args.output.exists()
+            else None
+        )
+
+        def checkpoint(artifact: ConfirmatoryShardArtifact) -> None:
+            _atomic_write(args.output, artifact.model_dump_json(indent=2) + "\n")
+
+        shard = run_confirmatory_shard(
+            spec,
+            manifest,
+            shard_index=args.shard_index,
+            shard_count=args.shard_count,
+            split=(ConfirmatorySplit(args.split) if args.split else None),
+            existing=existing,
+            checkpoint=checkpoint,
+            max_new_episodes=args.max_new_episodes,
+        )
+        checkpoint(shard)
+        print(
+            json.dumps(
+                {
+                    "artifact_sha256": shard.artifact_sha256,
+                    "episodes": len(shard.episodes),
+                    "output": str(args.output),
+                    "shard_id": shard.shard_id,
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return
+    if args.command == "phase5-confirmatory-report":
+        spec = load_yaml(args.config, ConfirmatoryExecutionSpec)
+        manifest = ConfirmatoryManifest.model_validate_json(
+            args.manifest.read_text(encoding="utf-8")
+        )
+        shards = tuple(
+            ConfirmatoryShardArtifact.model_validate_json(
+                path.read_text(encoding="utf-8")
+            )
+            for path in args.shards
+        )
+        report = finalize_confirmatory_report(spec.design, manifest, shards)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(
             report.model_dump_json(indent=2) + "\n", encoding="utf-8"

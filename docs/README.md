@@ -4,7 +4,9 @@
 
 This documentation describes an open-weight evaluation harness for multi-agent security. It connects a broad research program—collusion, steganography, heterogeneous attacks, provenance, and containment—to a concrete first implementation.
 
-The repository currently implements Phases 0–4: deterministic event history, scripted and model-backed orchestration, defense mediation, provenance, remote serving, direct white-box intervention, causal usable-information evaluation, and coalitional hyperproperty verification. Phase 5 is the next implementation target.
+The repository implements Phases 0–4 and the Phase 5 anytime-evidence
+framework. Phase 5's frozen, resumable 7B confirmatory run is ready but has not
+yet been executed.
 
 ## Research program
 
