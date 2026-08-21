@@ -64,6 +64,21 @@ from agent_defense_evals.experiments.model_workflow_remediation import (
     ModelWorkflowRemediationSpec,
     run_model_workflow_remediation,
 )
+from agent_defense_evals.experiments.tail_robustness.contracts import (
+    TailExperimentSpec,
+    TailManifest,
+    TailOutcomeArtifact,
+    TailSelectionArtifact,
+    TailSplit,
+)
+from agent_defense_evals.experiments.tail_robustness.reporting import (
+    finalize_tail_report,
+)
+from agent_defense_evals.experiments.tail_robustness.runner import (
+    build_tail_manifest,
+    run_tail_split,
+    select_tail_stacks,
+)
 from agent_defense_evals.experiments.white_box_information import (
     WhiteBoxInformationSpec,
     run_white_box_information,
@@ -157,6 +172,34 @@ def build_parser() -> argparse.ArgumentParser:
     phase7_workflow = subparsers.add_parser("phase7-model-workflow")
     phase7_workflow.add_argument("--config", type=Path, required=True)
     phase7_workflow.add_argument("--output", type=Path, required=True)
+
+    tail_plan = subparsers.add_parser("phase7-tail-plan")
+    tail_plan.add_argument("--config", type=Path, required=True)
+    tail_plan.add_argument("--output", type=Path, required=True)
+    tail_plan.add_argument("--implementation-revision", required=True)
+
+    tail_run = subparsers.add_parser("phase7-tail-run")
+    tail_run.add_argument("--config", type=Path, required=True)
+    tail_run.add_argument("--manifest", type=Path, required=True)
+    tail_run.add_argument("--output", type=Path, required=True)
+    tail_run.add_argument(
+        "--split", choices=tuple(item.value for item in TailSplit), required=True
+    )
+    tail_run.add_argument("--selection", type=Path)
+
+    tail_select = subparsers.add_parser("phase7-tail-select")
+    tail_select.add_argument("--config", type=Path, required=True)
+    tail_select.add_argument("--manifest", type=Path, required=True)
+    tail_select.add_argument("--validation-results", type=Path, required=True)
+    tail_select.add_argument("--output", type=Path, required=True)
+
+    tail_report = subparsers.add_parser("phase7-tail-report")
+    tail_report.add_argument("--config", type=Path, required=True)
+    tail_report.add_argument("--manifest", type=Path, required=True)
+    tail_report.add_argument("--selection", type=Path, required=True)
+    tail_report.add_argument("--validation-results", type=Path, required=True)
+    tail_report.add_argument("--test-results", type=Path, required=True)
+    tail_report.add_argument("--output", type=Path, required=True)
     return parser
 
 
@@ -377,3 +420,77 @@ def main(argv: Sequence[str] | None = None) -> None:
             report.model_dump_json(indent=2) + "\n", encoding="utf-8"
         )
         print(report.model_dump_json(indent=2))
+        return
+    if args.command == "phase7-tail-plan":
+        spec = load_yaml(args.config, TailExperimentSpec)
+        manifest = build_tail_manifest(spec, args.implementation_revision)
+        _atomic_write(args.output, manifest.model_dump_json(indent=2) + "\n")
+        print(
+            json.dumps(
+                {
+                    "assignments": len(manifest.assignments),
+                    "manifest_sha256": manifest.manifest_sha256,
+                    "output": str(args.output),
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return
+    if args.command == "phase7-tail-run":
+        spec = load_yaml(args.config, TailExperimentSpec)
+        manifest = TailManifest.model_validate_json(
+            args.manifest.read_text(encoding="utf-8")
+        )
+        selection = (
+            TailSelectionArtifact.model_validate_json(
+                args.selection.read_text(encoding="utf-8")
+            )
+            if args.selection
+            else None
+        )
+        artifact = run_tail_split(spec, manifest, TailSplit(args.split), selection)
+        _atomic_write(args.output, artifact.model_dump_json(indent=2) + "\n")
+        print(
+            json.dumps(
+                {
+                    "artifact_sha256": artifact.artifact_sha256,
+                    "outcomes": len(artifact.outcomes),
+                    "output": str(args.output),
+                    "split": artifact.split.value,
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return
+    if args.command == "phase7-tail-select":
+        spec = load_yaml(args.config, TailExperimentSpec)
+        manifest = TailManifest.model_validate_json(
+            args.manifest.read_text(encoding="utf-8")
+        )
+        validation = TailOutcomeArtifact.model_validate_json(
+            args.validation_results.read_text(encoding="utf-8")
+        )
+        selection = select_tail_stacks(spec, manifest, validation)
+        _atomic_write(args.output, selection.model_dump_json(indent=2) + "\n")
+        print(selection.model_dump_json(indent=2))
+        return
+    if args.command == "phase7-tail-report":
+        spec = load_yaml(args.config, TailExperimentSpec)
+        manifest = TailManifest.model_validate_json(
+            args.manifest.read_text(encoding="utf-8")
+        )
+        selection = TailSelectionArtifact.model_validate_json(
+            args.selection.read_text(encoding="utf-8")
+        )
+        validation = TailOutcomeArtifact.model_validate_json(
+            args.validation_results.read_text(encoding="utf-8")
+        )
+        test = TailOutcomeArtifact.model_validate_json(
+            args.test_results.read_text(encoding="utf-8")
+        )
+        report = finalize_tail_report(spec, manifest, selection, validation, test)
+        rendered = json.dumps(report, indent=2, sort_keys=True) + "\n"
+        _atomic_write(args.output, rendered)
+        print(rendered, end="")
