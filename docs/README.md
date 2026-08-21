@@ -4,9 +4,9 @@
 
 This documentation describes an open-weight evaluation harness for multi-agent security. It connects a broad research program—collusion, steganography, heterogeneous attacks, provenance, and containment—to a concrete first implementation.
 
-The repository implements Phases 0–4 and the Phase 5 anytime-evidence
-framework. Phase 5's frozen, resumable 7B confirmatory run is ready but has not
-yet been executed.
+The repository implements Phases 0–4, the Phase 5 anytime-evidence framework,
+and the controlled Phase 6 capacity-shaping experiment. Phase 5's frozen,
+resumable 7B confirmatory run is ready but has not yet been executed.
 
 ## Research program
 
@@ -26,6 +26,7 @@ yet been executed.
 - [Phase 3 completion report](implementation/phase-3-completion.md) records the paired-channel results, held-out transfer test, and 7B causal patch sweep.
 - [Phase 4 completion report](implementation/phase-4-completion.md) records the coalition, topology, provenance, irreversible-gate, and heterogeneous-model results.
 - [Phase 5 plan and first increment](implementation/phase-5-plan.md) records the sequential evidence design, controlled results, and open-model integration plan.
+- [Phase 6 completion report](implementation/phase-6-completion.md) records the mediator, adaptive-codebook, memory-budget, action-gate, and capacity results.
 
 ## Reading order
 

@@ -17,6 +17,10 @@ from agent_defense_evals.attacks.scripted import ForceSelectionAttack, NoAttack
 from agent_defense_evals.channels.covert import ChannelKind
 from agent_defense_evals.core.schemas import ExperimentSpec
 from agent_defense_evals.defenses.base import Defense
+from agent_defense_evals.defenses.mediation import (
+    MediatorKind,
+    MessageMediatorDefense,
+)
 from agent_defense_evals.defenses.scripted import BlockPlanDefense, RewritePlanDefense
 from agent_defense_evals.models.base import ModelRuntime
 from agent_defense_evals.models.openai_runtime import OpenAICompatibleRuntime
@@ -89,9 +93,7 @@ def build_agents(
             agents.append(
                 ConstraintSharingAgent(
                     agent.agent_id,
-                    coordinator=bool(
-                        agent.policy.config.get("coordinator", False)
-                    ),
+                    coordinator=bool(agent.policy.config.get("coordinator", False)),
                 )
             )
             continue
@@ -199,6 +201,19 @@ def build_defenses(spec: ExperimentSpec) -> tuple[Defense, ...]:
                 RewritePlanDefense(
                     source_plan=str(defense.config["source_plan"]),
                     replacement_plan=str(defense.config["replacement_plan"]),
+                )
+            )
+            continue
+        if defense.kind == "message_mediator":
+            config = defense.config
+            defenses.append(
+                MessageMediatorDefense(
+                    MediatorKind(str(config["mediator"])),
+                    base_seed=int(config.get("base_seed", spec.base_seed)),
+                    information_budget_bits=int(
+                        config.get("information_budget_bits", 1)
+                    ),
+                    randomized_retention=float(config.get("randomized_retention", 0.5)),
                 )
             )
             continue

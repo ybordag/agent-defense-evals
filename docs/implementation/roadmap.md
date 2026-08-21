@@ -8,9 +8,10 @@ The implementation begins with scripted agents. Model downloads and GPU-backed e
 
 ## Current status
 
-Phases 0–4 are implemented. Phase 5 now includes its confirmatory statistical
-contract, goal-driven model-agent path, and resumable sharded runner. The
-registered 7B calibration/validation/test run is pending.
+Phases 0–4 and the controlled Phase 6 capacity-shaping experiment are
+implemented. Phase 5 includes its confirmatory statistical contract,
+goal-driven model-agent path, and resumable sharded runner, but its registered
+7B calibration/validation/test run remains pending.
 
 ## Reset decision
 
@@ -152,6 +153,10 @@ and its resulting gate evaluation remain.
 
 ## Phase 6: Experiment 4 — capacity shaping
 
+Status: complete against the controlled synthetic gates. See
+[Phase 6 completion](phase-6-completion.md). Open-model adaptive transfer is a
+Phase 7 target.
+
 ### Build
 
 - message-mediator interface;
@@ -202,6 +207,7 @@ and its resulting gate evaluation remain.
 
 ## Current implementation target
 
-The next action is a staged Phase 5 execution: a small 7B behavioral sanity
-check, the frozen validation split, and only then the full held-out test split.
-Test outcomes must not be used to change thresholds or prompts.
+Two tracks remain: execute Phase 5 in stages without exposing its test split,
+and begin Phase 7 defense optimization and held-out transfer. The next Phase 5
+action is a one-episode 7B calibration canary, followed by calibration,
+validation, and only then the frozen test split.

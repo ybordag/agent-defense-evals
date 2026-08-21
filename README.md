@@ -2,7 +2,9 @@
 
 An event-sourced evaluation harness for multi-agent AI security defenses across collusion, steganography, heterogeneous attacks, and the attack dimensions defined in Section 3.3 of the motivating research.
 
-Phases 0–4 are implemented: deterministic traces, scripted and model-backed agents, defense mediation, provenance, remote serving, white-box intervention, causal usable-information evaluation, and coalitional hyperproperty verification. Phase 4 includes exhaustive and graph-local coalition checks, provenance-backed flow policies, an irreversible authorization gate, and a heterogeneous Qwen model audit.
+Phases 0–4 and the controlled Phase 6 capacity-shaping experiment are
+implemented. Phase 5's synthetic evidence experiment and confirmatory harness
+are implemented; its larger goal-driven 7B run remains pending.
 
 ## Documentation
 
@@ -15,6 +17,7 @@ Phases 0–4 are implemented: deterministic traces, scripted and model-backed ag
 - [Phase 3 completion report](docs/implementation/phase-3-completion.md)
 - [Phase 4 completion report](docs/implementation/phase-4-completion.md)
 - [Phase 5 plan and first increment](docs/implementation/phase-5-plan.md)
+- [Phase 6 completion report](docs/implementation/phase-6-completion.md)
 
 ## Development setup
 
@@ -140,4 +143,12 @@ agent-defense-evals phase5-model-run \
 agent-defense-evals phase5-model-run \
   --config configs/experiments/phase5_model_trace_7b_pilot.yaml \
   --output artifacts/phase5-model-trace-7b-report.json
+```
+
+Run the Phase 6 controlled capacity-shaping experiment:
+
+```bash
+agent-defense-evals phase6-run \
+  --config configs/experiments/phase6_capacity_shaping.yaml \
+  --output artifacts/phase6-report.json
 ```

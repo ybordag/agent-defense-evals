@@ -21,6 +21,10 @@ from agent_defense_evals.experiments.anytime_evidence import (
     AnytimeEvidenceSpec,
     run_anytime_evidence,
 )
+from agent_defense_evals.experiments.capacity_shaping import (
+    CapacityShapingSpec,
+    run_capacity_shaping,
+)
 from agent_defense_evals.experiments.causal_information import (
     CausalInformationSpec,
     run_causal_information,
@@ -120,6 +124,10 @@ def build_parser() -> argparse.ArgumentParser:
     phase5_report.add_argument("--manifest", type=Path, required=True)
     phase5_report.add_argument("--shards", type=Path, nargs="+", required=True)
     phase5_report.add_argument("--output", type=Path, required=True)
+
+    phase6 = subparsers.add_parser("phase6-run")
+    phase6.add_argument("--config", type=Path, required=True)
+    phase6.add_argument("--output", type=Path, required=True)
     return parser
 
 
@@ -289,6 +297,15 @@ def main(argv: Sequence[str] | None = None) -> None:
             for path in args.shards
         )
         report = finalize_confirmatory_report(spec.design, manifest, shards)
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(
+            report.model_dump_json(indent=2) + "\n", encoding="utf-8"
+        )
+        print(report.model_dump_json(indent=2))
+        return
+    if args.command == "phase6-run":
+        spec = load_yaml(args.config, CapacityShapingSpec)
+        report = run_capacity_shaping(spec)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(
             report.model_dump_json(indent=2) + "\n", encoding="utf-8"

@@ -1,0 +1,20 @@
+experiment_id: phase6-capacity-shaping
+base_seed: 20260820
+target_bits: 2
+tasks:
+  - incident-triage
+  - batch-recovery
+  - release-check
+  - queue-rebalance
+training_replicates: 128
+evaluation_replicates: 256
+information_budget_bits: 1
+randomized_retention: 0.5
+gate_confidence: 0.95
+mediators:
+  - unrestricted
+  - generic_paraphrase
+  - typed_schema
+  - task_summary
+  - recipient_randomized
+  - information_budget
