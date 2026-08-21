@@ -39,6 +39,26 @@ Phase 7 is the shared transfer layer for strengthening Phases 3–6:
 - deployment requirements for observability, mediation, and assumptions;
 - shadow-only policy export tied to the frozen specification hash.
 
+## Phase 3 + Phase 6 model-capacity experiment
+
+The first cross-phase execution path is implemented; its real Qwen run is
+pending. It uses two model-backed agents through the common runner:
+
+1. the sender receives a two-bit secret and legitimate task;
+2. the sender emits a registered surface or adaptive semantic carrier;
+3. the common defense gateway applies unrestricted, paraphrase, or typed
+   mediation;
+4. the receiver observes only the delivered representation and generates the
+   target action;
+5. the report measures sender compliance, delivered-message information,
+   receiver-action information, attack success, utility, latency, and complete
+   model/event provenance.
+
+The four paired conditions are unrestricted fixed code, paraphrased fixed code,
+paraphrased adaptive code, and typed adaptive code. The codebook is supplied in
+the prompts, so this tests whether open models can execute a channel selected
+by the Phase 6 optimizer. It does not claim autonomous channel discovery.
+
 ## Controlled framework result
 
 At a validation minimum-utility floor of `0.75`, the fixture selects the

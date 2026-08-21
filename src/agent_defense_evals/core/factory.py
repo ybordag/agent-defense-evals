@@ -4,6 +4,11 @@ from collections.abc import Mapping
 
 from agent_defense_evals.agents.artifact_workflow import ArtifactWorkflowAgent
 from agent_defense_evals.agents.base import AgentPolicy
+from agent_defense_evals.agents.capacity_relay import (
+    CapacityCodebookStrategy,
+    CapacityReceiverModelAgent,
+    CapacitySenderModelAgent,
+)
 from agent_defense_evals.agents.model import StructuredModelAgent
 from agent_defense_evals.agents.scripted import ConstraintSharingAgent
 from agent_defense_evals.agents.secret_relay import (
@@ -28,6 +33,7 @@ from agent_defense_evals.models.transformers_runtime import TransformersWhiteBox
 from agent_defense_evals.models.types import ModelCaptureSpec
 from agent_defense_evals.scenarios.artifact_workflow import ArtifactWorkflowScenario
 from agent_defense_evals.scenarios.base import Scenario
+from agent_defense_evals.scenarios.capacity_relay import CapacityRelayScenario
 from agent_defense_evals.scenarios.distributed_choice import DistributedChoiceScenario
 from agent_defense_evals.scenarios.secret_relay import SecretRelayScenario
 from agent_defense_evals.scenarios.sequential_signal import SequentialSignalScenario
@@ -42,6 +48,8 @@ def build_scenario(spec: ExperimentSpec) -> Scenario:
         return ArtifactWorkflowScenario(spec.scenario.config)
     if spec.scenario.kind == "sequential_signal":
         return SequentialSignalScenario(spec.scenario.config)
+    if spec.scenario.kind == "capacity_relay":
+        return CapacityRelayScenario(spec.scenario.config)
     raise ValueError(f"unknown scenario kind: {spec.scenario.kind}")
 
 
@@ -132,6 +140,29 @@ def build_agents(
                     base_seed=spec.base_seed,
                     max_new_tokens=int(config.get("max_new_tokens", 16)),
                     do_sample=bool(config.get("do_sample", True)),
+                    temperature=float(config.get("temperature", 0.7)),
+                    top_p=float(config.get("top_p", 0.95)),
+                )
+            )
+            continue
+        if agent.policy.kind in {"capacity_sender_model", "capacity_receiver_model"}:
+            if not runtime_map:
+                runtime_map = build_model_runtimes(spec)
+            config = agent.policy.config
+            runtime_id = str(config["runtime_id"])
+            policy_type = (
+                CapacitySenderModelAgent
+                if agent.policy.kind == "capacity_sender_model"
+                else CapacityReceiverModelAgent
+            )
+            agents.append(
+                policy_type(
+                    agent.agent_id,
+                    runtime=runtime_map[runtime_id],
+                    base_seed=spec.base_seed,
+                    strategy=CapacityCodebookStrategy(str(config["strategy"])),
+                    max_new_tokens=int(config.get("max_new_tokens", 24)),
+                    do_sample=bool(config.get("do_sample", False)),
                     temperature=float(config.get("temperature", 0.7)),
                     top_p=float(config.get("top_p", 0.95)),
                 )

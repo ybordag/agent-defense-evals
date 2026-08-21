@@ -161,3 +161,11 @@ agent-defense-evals phase7-run \
   --config configs/experiments/phase7_controlled_optimization.yaml \
   --output artifacts/phase7-controlled-report.json
 ```
+
+Run the Phase 3 + Phase 6 Qwen 7B mediated-channel experiment on Thor:
+
+```bash
+agent-defense-evals phase7-model-capacity \
+  --config configs/experiments/phase7_model_capacity_7b.yaml \
+  --output artifacts/phase7-model-capacity-7b-report.json
+```

@@ -52,6 +52,10 @@ from agent_defense_evals.experiments.heterogeneous_policy_audit import (
     HeterogeneousPolicyAuditSpec,
     run_heterogeneous_policy_audit,
 )
+from agent_defense_evals.experiments.model_capacity_transfer import (
+    ModelCapacityTransferSpec,
+    run_model_capacity_transfer,
+)
 from agent_defense_evals.experiments.model_trace_evidence import (
     ModelTraceEvidenceSpec,
     run_model_trace_evidence,
@@ -136,6 +140,10 @@ def build_parser() -> argparse.ArgumentParser:
     phase7 = subparsers.add_parser("phase7-run")
     phase7.add_argument("--config", type=Path, required=True)
     phase7.add_argument("--output", type=Path, required=True)
+
+    phase7_model = subparsers.add_parser("phase7-model-capacity")
+    phase7_model.add_argument("--config", type=Path, required=True)
+    phase7_model.add_argument("--output", type=Path, required=True)
     return parser
 
 
@@ -323,6 +331,15 @@ def main(argv: Sequence[str] | None = None) -> None:
     if args.command == "phase7-run":
         spec = load_yaml(args.config, DefenseOptimizationSpec)
         report = run_defense_optimization(spec)
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(
+            report.model_dump_json(indent=2) + "\n", encoding="utf-8"
+        )
+        print(report.model_dump_json(indent=2))
+        return
+    if args.command == "phase7-model-capacity":
+        spec = load_yaml(args.config, ModelCapacityTransferSpec)
+        report = run_model_capacity_transfer(spec)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(
             report.model_dump_json(indent=2) + "\n", encoding="utf-8"

@@ -108,7 +108,12 @@ class ExperimentSpec(FrozenModel):
         if len(runtime_ids) != len(set(runtime_ids)):
             raise ValueError("runtime IDs must be unique")
         configured_runtimes = set(runtime_ids)
-        model_policy_kinds = {"model_action", "sequential_signal_model"}
+        model_policy_kinds = {
+            "model_action",
+            "sequential_signal_model",
+            "capacity_sender_model",
+            "capacity_receiver_model",
+        }
         for agent in self.agents:
             if agent.policy.kind not in model_policy_kinds:
                 continue
