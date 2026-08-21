@@ -2,10 +2,11 @@
 
 An event-sourced evaluation harness for multi-agent AI security defenses across collusion, steganography, heterogeneous attacks, and the attack dimensions defined in Section 3.3 of the motivating research.
 
-Phases 0–4, the controlled Phase 6 capacity-shaping experiment, and the first
-Phase 3 + 6 Qwen2.5-7B adaptive-mediation experiment are implemented. Phase
-5's synthetic evidence experiment and confirmatory harness are implemented;
-its larger goal-driven 7B run remains pending.
+Phases 0–4, the controlled Phase 6 capacity-shaping experiment, the Phase 3 + 6
+Qwen2.5-7B adaptive-mediation experiment, and the Phase 4 Qwen2.5-7B model
+workflow remediation experiment are implemented. Phase 5's synthetic evidence
+experiment and confirmatory harness are implemented; its larger goal-driven 7B
+run remains pending.
 
 ## Documentation
 
@@ -21,7 +22,7 @@ its larger goal-driven 7B run remains pending.
 - [Phase 6 completion report](docs/implementation/phase-6-completion.md)
 - [Phase 7 optimization and transfer progress](docs/implementation/phase-7-plan.md)
 - [Phase 3 + 6 model-capacity result](docs/implementation/phase-7-model-capacity-result.md)
-- [Phase 4 model-workflow extension](docs/implementation/phase-7-model-workflow-plan.md)
+- [Phase 4 model-workflow result](docs/implementation/phase-7-model-workflow-plan.md)
 
 ## Development setup
 

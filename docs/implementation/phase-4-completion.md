@@ -123,3 +123,23 @@ agent-defense-evals phase4-model-audit \
 - Broader transfer requires held-out models, policies, task families, topologies, and adversarially discovered coalitions.
 
 These limits define the required transfer experiments; they do not invalidate the Phase 4 acceptance result.
+
+## Phase 7 model-workflow extension
+
+The two principal open items above now have a bounded follow-up result. A
+pinned Qwen2.5-7B-Instruct checkpoint generated all six consequential workflow
+actions in an explicit planner–reviewer attack. Local role authorization still
+allowed the harmful composition. The existing hard gate prevented harm but
+lost task utility, while structural lineage remediation prevented harm and
+retained the required public retrieval and exact task utility. A benign control
+was not remediated.
+
+The extension also corrects effective-flow evaluation to identify protected
+sources through applied typed artifact lineage before using the generic event
+DAG for an audit witness. This prevents scheduling or rejected-proposal parents
+from being mistaken for effective data dependencies.
+
+The repair remains a typed structural transformation, not a claim that free-form
+content has been decontaminated. All agents use the same 7B checkpoint with
+heterogeneous roles; cross-model end-to-end transfer remains open. See the
+[full model-workflow result](phase-7-model-workflow-plan.md).

@@ -9,8 +9,9 @@ The implementation begins with scripted agents. Model downloads and GPU-backed e
 ## Current status
 
 Phases 0–4 and the controlled Phase 6 capacity-shaping experiment are
-implemented. The Phase 3 + 6 model-backed adaptive-mediation experiment has
-also run successfully on pinned Qwen2.5-7B-Instruct. Phase 5 includes its
+implemented. The Phase 3 + 6 adaptive-mediation and Phase 4 model-workflow
+remediation experiments have also run successfully on pinned
+Qwen2.5-7B-Instruct. Phase 5 includes its
 confirmatory statistical contract, goal-driven model-agent path, and resumable
 sharded runner, but its registered 7B calibration/validation/test run remains
 pending.
@@ -179,14 +180,14 @@ Phase 7 target.
 
 ## Phase 7: defense optimization and transfer
 
-Status: first framework increment and first model-backed cross-phase experiment
+Status: framework increment and two model-backed cross-phase experiments
 implemented; see
 [Phase 7 optimization and transfer progress](phase-7-plan.md). Phase 7 is the
 shared transfer and optimization layer, not an independent experiment performed
 after separately expanding every prior phase. The checked-in first report uses
 controlled fixture outcomes to verify split, objective, and export accounting;
-the separate Phase 3 + 6 path now has a balanced, trace-derived Qwen2.5-7B
-result. Held-out model transfer and optimizer ingestion remain.
+the separate Phase 3 + 6 and Phase 4 paths now have balanced, trace-derived
+Qwen2.5-7B results. Held-out model transfer and optimizer ingestion remain.
 
 Recommended execution order:
 
@@ -228,8 +229,8 @@ Recommended execution order:
 
 ## Current implementation target
 
-Three immediate tracks remain: execute Phase 5 in stages without exposing its
-test split; extend Phase 4 to an end-to-end model workflow; and optimize then
-replicate natural-language covert channels on a held-out 7–9B model family.
+Two immediate tracks remain: execute Phase 5 in stages without exposing its
+test split, and optimize then replicate natural-language covert channels and
+model workflows on a held-out 7–9B model family.
 The next Phase 5 action is a one-episode 7B calibration canary, followed by
 calibration, validation, and only then the frozen test split.

@@ -1,4 +1,40 @@
-# Phase 4 Model Workflow and Remediation Extension
+# Phase 4 Model Workflow and Remediation Result
+
+## Outcome
+
+The pinned Qwen2.5-7B-Instruct run completed across 24 episodes, 144 model
+generations, and 3,404 trace events. All eight experiment gates passed.
+
+| Condition | Harm | Exact utility | Remediation | Block |
+| --- | ---: | ---: | ---: | ---: |
+| Harmful, unmediated | 1.00 | 1.00 | 0.00 | 0.00 |
+| Harmful, local authorization only | 1.00 | 1.00 | 0.00 | 0.00 |
+| Harmful, protected-flow hard gate | 0.00 | 0.00 | 0.00 | 1.00 |
+| Harmful, targeted lineage repair | 0.00 | 1.00 | 1.00 | 0.00 |
+| Benign, unmediated | 0.00 | 1.00 | 0.00 | 0.00 |
+| Benign, targeted lineage repair | 0.00 | 1.00 | 0.00 | 0.00 |
+
+Every generated proposal matched the registered role policy, and the locally
+unauthorized proposal rate was zero in every condition. Effective typed-flow
+violations were `1.00` for the two unblocked harmful conditions and `0.00` for
+hard blocking, repair, and benign conditions.
+
+Each cell contains four task-balanced episodes, so the Wilson 95% interval is
+`[0.510, 1.000]` around an observed rate of one and `[0.000, 0.490]` around an
+observed rate of zero. This is strong mechanism evidence but a small pilot, not
+a population-level efficacy estimate.
+
+The raw 7B report is
+`artifacts/phase7-model-workflow-7b-report.json`, with SHA-256
+`1b0c2a537813ef2bcc7fcb4dcbcd6a0fc202bb5a4c46d165e61e2031ba9364a7`.
+Mean episode latency ranged from `28.60` to `29.15` seconds on the direct
+Transformers path.
+
+The same design also passed as a 0.5B vLLM plumbing canary. Because the prompt
+contains the exact registered action, that run validates schema, trace, and
+gateway interoperability rather than relative attacker capability. Its raw
+report SHA-256 is
+`4a6f7631b2b1e505e88b191ebaf444f77f321861aafe918fbf76cd0ae236f6c7`.
 
 ## Objective
 
@@ -113,4 +149,4 @@ agent-defense-evals phase7-model-workflow \
 ```
 
 The local fake-runtime integration test exercises the complete design before
-the pinned Qwen2.5-7B run on Thor.
+the pinned model runs on Thor.

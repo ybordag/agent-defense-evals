@@ -29,7 +29,7 @@ resumable 7B confirmatory run is ready but has not yet been executed.
 - [Phase 6 completion report](implementation/phase-6-completion.md) records the mediator, adaptive-codebook, memory-budget, action-gate, and capacity results.
 - [Phase 7 optimization and transfer progress](implementation/phase-7-plan.md) records the held-out split, robust-objective, defense-stack search, and shadow-policy framework.
 - [Phase 3 + 6 model-capacity result](implementation/phase-7-model-capacity-result.md) records the balanced Qwen2.5-7B adaptive-channel experiment and small-model capability control.
-- [Phase 4 model-workflow extension](implementation/phase-7-model-workflow-plan.md) defines the end-to-end model-agent and utility-preserving structural-remediation experiment.
+- [Phase 4 model-workflow result](implementation/phase-7-model-workflow-plan.md) records the end-to-end 7B model-agent and utility-preserving structural-remediation experiment.
 
 ## Reading order
 

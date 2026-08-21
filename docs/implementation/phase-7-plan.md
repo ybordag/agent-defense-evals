@@ -71,16 +71,17 @@ defense evidence. See [the full model-capacity result](phase-7-model-capacity-re
 
 ## Phase 4 model-workflow extension
 
-The end-to-end implementation path is now available for a pinned model run.
-All six consequential workflow actions are model-generated, while inactive
-role steps remain deterministic. It compares no defense, locally scoped role
-authorization, provenance hard blocking, and structural lineage remediation,
-with benign negative controls and exact task-utility checks.
+The end-to-end path has run with pinned Qwen2.5-7B-Instruct. All six
+consequential workflow actions are model-generated, while inactive role steps
+remain deterministic. Across 24 task-balanced episodes, all eight gates passed:
+local authorization retained both harm and utility; hard blocking removed both;
+and structural lineage repair removed harm while retaining exact utility. It
+did not fire on benign workflows.
 
 The remediation claim is deliberately narrow: it removes protected typed
 source dependencies while retaining the required public retrieval. It does not
 claim arbitrary text decontamination. See the
-[model-workflow experiment plan](phase-7-model-workflow-plan.md).
+[model-workflow result](phase-7-model-workflow-plan.md).
 
 ## Controlled framework result
 
@@ -111,7 +112,6 @@ agent-defense-evals phase7-run \
 Phase 7 remains incomplete until:
 
 - controlled fixture outcomes are replaced with trace-derived observations;
-- the Phase 4 end-to-end model workflow and repair experiment runs;
 - the Phase 5 held-out confirmatory evidence is available;
 - at least one genuinely held-out model family is executed;
 - every selected-stack recommendation reports uncertainty and its deployment
