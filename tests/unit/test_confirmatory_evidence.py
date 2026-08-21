@@ -14,8 +14,11 @@ from agent_defense_evals.experiments.confirmatory_evidence import (
     build_shard_artifact,
     finalize_confirmatory_report,
     missing_assignments,
+    verify_manifest,
     verify_shard_artifact,
 )
+
+IMPLEMENTATION_REVISION = "c" * 40
 
 
 def _spec(*, test_episodes: int = 80) -> ConfirmatoryEvidenceSpec:
@@ -80,7 +83,9 @@ def _spec(*, test_episodes: int = 80) -> ConfirmatoryEvidenceSpec:
 
 
 def _evidence(spec: ConfirmatoryEvidenceSpec) -> tuple[EpisodeEvidence, ...]:
-    manifest = build_manifest(spec)
+    manifest = build_manifest(
+        spec, implementation_revision=IMPLEMENTATION_REVISION
+    )
     models = {model.config_id: model for model in spec.model_configs}
     episodes = []
     for assignment in manifest.assignments:
@@ -117,10 +122,11 @@ def _evidence(spec: ConfirmatoryEvidenceSpec) -> tuple[EpisodeEvidence, ...]:
 
 def test_manifest_is_deterministic_disjoint_and_includes_held_out_model() -> None:
     spec = _spec(test_episodes=10)
-    first = build_manifest(spec)
-    second = build_manifest(spec)
+    first = build_manifest(spec, implementation_revision=IMPLEMENTATION_REVISION)
+    second = build_manifest(spec, implementation_revision=IMPLEMENTATION_REVISION)
 
     assert first == second
+    assert first.implementation_revision == IMPLEMENTATION_REVISION
     assert len(first.assignments) == 100
     assert len({assignment.assignment_id for assignment in first.assignments}) == 100
     assert len({assignment.seed for assignment in first.assignments}) == 100
@@ -134,6 +140,13 @@ def test_manifest_is_deterministic_disjoint_and_includes_held_out_model() -> Non
         for assignment in first.assignments
         if assignment.split is ConfirmatorySplit.TEST
     )
+
+    verify_manifest(first)
+    tampered = first.model_copy(
+        update={"implementation_revision": "e" * 40}
+    )
+    with pytest.raises(ValueError, match="manifest digest does not match"):
+        verify_manifest(tampered)
 
 
 def test_spec_rejects_prompt_leakage_and_missing_held_out_model() -> None:
@@ -160,7 +173,9 @@ def test_spec_rejects_prompt_leakage_and_missing_held_out_model() -> None:
 
 def test_shards_are_content_addressed_and_resume_lists_missing_assignments() -> None:
     spec = _spec(test_episodes=10)
-    manifest = build_manifest(spec)
+    manifest = build_manifest(
+        spec, implementation_revision=IMPLEMENTATION_REVISION
+    )
     episodes = _evidence(spec)
     midpoint = len(episodes) // 2
     first = build_shard_artifact(
@@ -168,6 +183,7 @@ def test_shards_are_content_addressed_and_resume_lists_missing_assignments() -> 
     )
 
     verify_shard_artifact(first)
+    assert first.implementation_revision == IMPLEMENTATION_REVISION
     assert len(missing_assignments(manifest, (first,))) == len(episodes) - midpoint
     tampered = first.model_copy(update={"artifact_sha256": "wrong"})
     with pytest.raises(ValueError, match="digest does not match"):
@@ -176,7 +192,9 @@ def test_shards_are_content_addressed_and_resume_lists_missing_assignments() -> 
 
 def test_empirical_report_uses_only_calibration_and_does_not_overclaim() -> None:
     spec = _spec()
-    manifest = build_manifest(spec)
+    manifest = build_manifest(
+        spec, implementation_revision=IMPLEMENTATION_REVISION
+    )
     episodes = _evidence(spec)
     shards = (
         build_shard_artifact(
@@ -228,7 +246,9 @@ def test_empirical_report_uses_only_calibration_and_does_not_overclaim() -> None
 
 def test_report_rejects_missing_or_duplicate_assignments() -> None:
     spec = _spec(test_episodes=10)
-    manifest = build_manifest(spec)
+    manifest = build_manifest(
+        spec, implementation_revision=IMPLEMENTATION_REVISION
+    )
     episodes = _evidence(spec)
     incomplete = build_shard_artifact(
         shard_id="incomplete", manifest=manifest, episodes=episodes[:-1]

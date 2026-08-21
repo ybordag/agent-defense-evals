@@ -134,7 +134,8 @@ Status: complete. See [Phase 4 completion](phase-4-completion.md).
 
 Status: in progress. The sequential-statistics foundation, trace-derived
 scoring, preliminary 0.5B/7B pilots, confirmatory split contract, uncertainty
-reporting, goal-driven prompts, and resumable shards are implemented; see
+reporting, goal-driven prompts, resumable shards, mandatory split selection,
+and implementation-bound manifests are implemented; see
 [Phase 5 plan and first increment](phase-5-plan.md). The larger held-out 7B run
 and its resulting gate evaluation remain.
 

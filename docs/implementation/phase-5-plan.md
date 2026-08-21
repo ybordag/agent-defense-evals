@@ -7,6 +7,21 @@ and confirmatory execution framework are implemented. Preliminary
 Qwen2.5-0.5B and Qwen2.5-7B pilots ran on Thor. The confirmatory model run has
 not yet been executed, so Phase 5 is not complete.
 
+Before the first confirmatory canary, the launch boundary was hardened:
+
+- `--split` is mandatory for every shard command, preventing an omitted flag
+  from silently selecting calibration, validation, and test together;
+- the manifest records the exact 40-character implementation revision;
+- manifest content is rehashed and verified before shard selection;
+- every shard records that revision and rejects a mismatched executable or
+  resumed checkpoint;
+- the final report exposes the same implementation revision.
+
+The confirmatory run is native to the common event-sourced runner and resumable
+shard format. It is not yet Fairlead-backed: the current Fairlead integration
+lacks the Python evaluation worker, artifact-digest verification, and
+trace-level routing provenance required for an unattended evidentiary run.
+
 ## Conjecture under test
 
 Weak coalition evidence distributed across a long stochastic trajectory can be accumulated by an anytime-valid process while controlling the probability of ever alarming under a conditionally calibrated benign null. A fixed per-turn threshold either spends its error budget repeatedly or becomes too conservative, while a conventional change-point detector can lose its nominal error rate under benign drift.
@@ -188,8 +203,10 @@ agent-defense-evals phase5-model-run \
 Freeze the confirmatory manifest before starting any model jobs:
 
 ```bash
+IMPLEMENTATION_REVISION=<frozen-40-character-git-commit>
 agent-defense-evals phase5-confirmatory-plan \
   --config configs/experiments/phase5_confirmatory_7b.yaml \
+  --implementation-revision "$IMPLEMENTATION_REVISION" \
   --output artifacts/phase5-confirmatory-manifest.json
 ```
 
@@ -201,6 +218,7 @@ agent-defense-evals phase5-confirmatory-run \
   --config configs/experiments/phase5_confirmatory_7b.yaml \
   --manifest artifacts/phase5-confirmatory-manifest.json \
   --split calibration \
+  --implementation-revision "$IMPLEMENTATION_REVISION" \
   --shard-index 0 --shard-count 16 \
   --output artifacts/phase5-confirmatory-calibration-shard-00.json
 ```
@@ -221,12 +239,19 @@ Aggregate only after every manifest assignment is present:
 agent-defense-evals phase5-confirmatory-report \
   --config configs/experiments/phase5_confirmatory_7b.yaml \
   --manifest artifacts/phase5-confirmatory-manifest.json \
+  --implementation-revision "$IMPLEMENTATION_REVISION" \
   --shards artifacts/phase5-confirmatory-shard-*.json \
   --output artifacts/phase5-confirmatory-report.json
 ```
 
 The report command rejects missing assignments, duplicates, altered hashes,
-wrong score/model revisions, and mixed manifests.
+wrong score/model/implementation revisions, and mixed manifests.
+
+The first canary must use only `--split calibration --shard-index 0
+--shard-count 16 --max-new-episodes 1`. Validation remains unopened until the
+calibration artifacts and thresholds are reviewed. Test remains unopened until
+the implementation, prompt, score, and threshold rules are locked after
+validation.
 
 ## Current limitations
 

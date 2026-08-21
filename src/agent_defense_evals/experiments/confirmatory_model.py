@@ -44,6 +44,7 @@ from agent_defense_evals.experiments.confirmatory_evidence import (
     ValidityMode,
     build_shard_artifact,
     specification_sha256,
+    verify_manifest,
     verify_shard_artifact,
 )
 from agent_defense_evals.models.base import ModelRuntime
@@ -251,14 +252,14 @@ def select_shard_assignments(
     *,
     shard_index: int,
     shard_count: int,
-    split: ConfirmatorySplit | None = None,
+    split: ConfirmatorySplit,
 ) -> tuple[EpisodeAssignment, ...]:
     if shard_count < 1 or not 0 <= shard_index < shard_count:
         raise ValueError("shard index must be in [0, shard_count)")
     eligible = tuple(
         assignment
         for assignment in manifest.assignments
-        if split is None or assignment.split is split
+        if assignment.split is split
     )
     return tuple(
         assignment
@@ -273,12 +274,16 @@ def run_confirmatory_shard(
     *,
     shard_index: int = 0,
     shard_count: int = 1,
-    split: ConfirmatorySplit | None = None,
+    split: ConfirmatorySplit,
+    implementation_revision: str,
     runtimes: Mapping[str, ModelRuntime] | None = None,
     existing: ConfirmatoryShardArtifact | None = None,
     checkpoint: Callable[[ConfirmatoryShardArtifact], None] | None = None,
     max_new_episodes: int | None = None,
 ) -> ConfirmatoryShardArtifact:
+    verify_manifest(manifest)
+    if manifest.implementation_revision != implementation_revision:
+        raise ValueError("manifest implementation revision differs from execution")
     if manifest.specification_sha256 != specification_sha256(spec.design):
         raise ValueError("manifest does not match execution design")
     if max_new_episodes is not None and max_new_episodes < 1:
@@ -291,8 +296,7 @@ def run_confirmatory_shard(
     )
     if not selected:
         raise ValueError("selected confirmatory shard is empty")
-    prefix = split.value if split is not None else "all"
-    shard_id = f"{prefix}-shard-{shard_index:04d}-of-{shard_count:04d}"
+    shard_id = f"{split.value}-shard-{shard_index:04d}-of-{shard_count:04d}"
     completed: list[EpisodeEvidence] = []
     if existing is not None:
         verify_shard_artifact(existing)

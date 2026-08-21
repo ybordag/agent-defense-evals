@@ -119,6 +119,7 @@ def build_parser() -> argparse.ArgumentParser:
     phase5_plan = subparsers.add_parser("phase5-confirmatory-plan")
     phase5_plan.add_argument("--config", type=Path, required=True)
     phase5_plan.add_argument("--output", type=Path, required=True)
+    phase5_plan.add_argument("--implementation-revision", required=True)
 
     phase5_confirmatory = subparsers.add_parser("phase5-confirmatory-run")
     phase5_confirmatory.add_argument("--config", type=Path, required=True)
@@ -128,14 +129,18 @@ def build_parser() -> argparse.ArgumentParser:
     phase5_confirmatory.add_argument("--shard-count", type=int, default=1)
     phase5_confirmatory.add_argument("--max-new-episodes", type=int)
     phase5_confirmatory.add_argument(
-        "--split", choices=tuple(item.value for item in ConfirmatorySplit)
+        "--split",
+        choices=tuple(item.value for item in ConfirmatorySplit),
+        required=True,
     )
+    phase5_confirmatory.add_argument("--implementation-revision", required=True)
 
     phase5_report = subparsers.add_parser("phase5-confirmatory-report")
     phase5_report.add_argument("--config", type=Path, required=True)
     phase5_report.add_argument("--manifest", type=Path, required=True)
     phase5_report.add_argument("--shards", type=Path, nargs="+", required=True)
     phase5_report.add_argument("--output", type=Path, required=True)
+    phase5_report.add_argument("--implementation-revision", required=True)
 
     phase6 = subparsers.add_parser("phase6-run")
     phase6.add_argument("--config", type=Path, required=True)
@@ -251,7 +256,10 @@ def main(argv: Sequence[str] | None = None) -> None:
         return
     if args.command == "phase5-confirmatory-plan":
         spec = load_yaml(args.config, ConfirmatoryExecutionSpec)
-        manifest = build_manifest(spec.design)
+        manifest = build_manifest(
+            spec.design,
+            implementation_revision=args.implementation_revision,
+        )
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(
             manifest.model_dump_json(indent=2) + "\n", encoding="utf-8"
@@ -260,6 +268,7 @@ def main(argv: Sequence[str] | None = None) -> None:
             json.dumps(
                 {
                     "assignments": len(manifest.assignments),
+                    "implementation_revision": manifest.implementation_revision,
                     "specification_sha256": manifest.specification_sha256,
                     "manifest_sha256": manifest.manifest_sha256,
                     "output": str(args.output),
@@ -290,7 +299,8 @@ def main(argv: Sequence[str] | None = None) -> None:
             manifest,
             shard_index=args.shard_index,
             shard_count=args.shard_count,
-            split=(ConfirmatorySplit(args.split) if args.split else None),
+            split=ConfirmatorySplit(args.split),
+            implementation_revision=args.implementation_revision,
             existing=existing,
             checkpoint=checkpoint,
             max_new_episodes=args.max_new_episodes,
@@ -301,6 +311,7 @@ def main(argv: Sequence[str] | None = None) -> None:
                 {
                     "artifact_sha256": shard.artifact_sha256,
                     "episodes": len(shard.episodes),
+                    "implementation_revision": shard.implementation_revision,
                     "output": str(args.output),
                     "shard_id": shard.shard_id,
                 },
@@ -314,6 +325,10 @@ def main(argv: Sequence[str] | None = None) -> None:
         manifest = ConfirmatoryManifest.model_validate_json(
             args.manifest.read_text(encoding="utf-8")
         )
+        if manifest.implementation_revision != args.implementation_revision:
+            raise ValueError(
+                "manifest implementation revision differs from report command"
+            )
         shards = tuple(
             ConfirmatoryShardArtifact.model_validate_json(
                 path.read_text(encoding="utf-8")

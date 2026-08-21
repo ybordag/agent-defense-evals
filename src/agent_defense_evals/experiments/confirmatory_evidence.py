@@ -151,6 +151,7 @@ class EpisodeAssignment(FrozenModel):
 
 class ConfirmatoryManifest(FrozenModel):
     experiment_id: str
+    implementation_revision: str = Field(pattern=r"^[0-9a-f]{40}$")
     specification_sha256: str
     manifest_sha256: str
     assignments: tuple[EpisodeAssignment, ...]
@@ -194,6 +195,7 @@ class EpisodeEvidence(FrozenModel):
 
 class ConfirmatoryShardArtifact(FrozenModel):
     shard_id: str = Field(min_length=1)
+    implementation_revision: str = Field(pattern=r"^[0-9a-f]{40}$")
     specification_sha256: str = Field(min_length=1)
     manifest_sha256: str = Field(min_length=1)
     episodes: tuple[EpisodeEvidence, ...] = Field(min_length=1)
@@ -250,6 +252,7 @@ class CalibrationSummary(FrozenModel):
 
 class ConfirmatoryEvidenceReport(FrozenModel):
     experiment_id: str
+    implementation_revision: str
     specification_sha256: str
     manifest_sha256: str
     artifact_sha256s: tuple[str, ...]
@@ -275,7 +278,11 @@ def specification_sha256(spec: ConfirmatoryEvidenceSpec) -> str:
     return _canonical_sha256(spec.model_dump(mode="json"))
 
 
-def build_manifest(spec: ConfirmatoryEvidenceSpec) -> ConfirmatoryManifest:
+def build_manifest(
+    spec: ConfirmatoryEvidenceSpec,
+    *,
+    implementation_revision: str,
+) -> ConfirmatoryManifest:
     assignments: list[EpisodeAssignment] = []
     split_designs = (
         (ConfirmatorySplit.CALIBRATION, spec.calibration),
@@ -326,6 +333,7 @@ def build_manifest(spec: ConfirmatoryEvidenceSpec) -> ConfirmatoryManifest:
     spec_hash = specification_sha256(spec)
     manifest_payload = {
         "experiment_id": spec.experiment_id,
+        "implementation_revision": implementation_revision,
         "specification_sha256": spec_hash,
         "assignments": [
             assignment.model_dump(mode="json") for assignment in assignments
@@ -333,10 +341,17 @@ def build_manifest(spec: ConfirmatoryEvidenceSpec) -> ConfirmatoryManifest:
     }
     return ConfirmatoryManifest(
         experiment_id=spec.experiment_id,
+        implementation_revision=implementation_revision,
         specification_sha256=spec_hash,
         manifest_sha256=_canonical_sha256(manifest_payload),
         assignments=tuple(assignments),
     )
+
+
+def verify_manifest(manifest: ConfirmatoryManifest) -> None:
+    payload = manifest.model_dump(mode="json", exclude={"manifest_sha256"})
+    if _canonical_sha256(payload) != manifest.manifest_sha256:
+        raise ValueError("confirmatory manifest digest does not match")
 
 
 def build_shard_artifact(
@@ -345,9 +360,11 @@ def build_shard_artifact(
     manifest: ConfirmatoryManifest,
     episodes: tuple[EpisodeEvidence, ...],
 ) -> ConfirmatoryShardArtifact:
+    verify_manifest(manifest)
     _validate_episode_assignments(manifest, episodes)
     payload = {
         "shard_id": shard_id,
+        "implementation_revision": manifest.implementation_revision,
         "specification_sha256": manifest.specification_sha256,
         "manifest_sha256": manifest.manifest_sha256,
         "episodes": [episode.model_dump(mode="json") for episode in episodes],
@@ -666,6 +683,7 @@ def finalize_confirmatory_report(
     manifest: ConfirmatoryManifest,
     shards: tuple[ConfirmatoryShardArtifact, ...],
 ) -> ConfirmatoryEvidenceReport:
+    verify_manifest(manifest)
     if manifest.specification_sha256 != specification_sha256(spec):
         raise ValueError("manifest does not match confirmatory specification")
     all_episodes: list[EpisodeEvidence] = []
@@ -675,6 +693,8 @@ def finalize_confirmatory_report(
         verify_shard_artifact(shard)
         if shard.specification_sha256 != manifest.specification_sha256:
             raise ValueError(f"shard {shard.shard_id} specification differs")
+        if shard.implementation_revision != manifest.implementation_revision:
+            raise ValueError(f"shard {shard.shard_id} implementation differs")
         if shard.manifest_sha256 != manifest.manifest_sha256:
             raise ValueError(f"shard {shard.shard_id} manifest differs")
         for episode in shard.episodes:
@@ -806,6 +826,7 @@ def finalize_confirmatory_report(
     )
     return ConfirmatoryEvidenceReport(
         experiment_id=spec.experiment_id,
+        implementation_revision=manifest.implementation_revision,
         specification_sha256=manifest.specification_sha256,
         manifest_sha256=manifest.manifest_sha256,
         artifact_sha256s=tuple(sorted(artifact_hashes)),

@@ -1,5 +1,7 @@
 import json
 
+import pytest
+
 from agent_defense_evals.core.schemas import ModelRuntimeSpec
 from agent_defense_evals.experiments.anytime_evidence import StreamCondition
 from agent_defense_evals.experiments.confirmatory_evidence import (
@@ -22,6 +24,8 @@ from agent_defense_evals.models.types import (
     ModelIdentity,
     RuntimeCapabilities,
 )
+
+IMPLEMENTATION_REVISION = "d" * 40
 
 
 class GoalFollowingRuntime:
@@ -122,37 +126,46 @@ def _execution_spec() -> ConfirmatoryExecutionSpec:
 
 def test_goal_driven_confirmatory_shard_uses_unscripted_prompts_and_scores() -> None:
     spec = _execution_spec()
-    manifest = build_manifest(spec.design)
+    manifest = build_manifest(
+        spec.design, implementation_revision=IMPLEMENTATION_REVISION
+    )
     primary = GoalFollowingRuntime("open-model-primary", "revision-a")
     held_out = GoalFollowingRuntime("open-model-held-out", "revision-b")
-    shard = run_confirmatory_shard(
-        spec,
-        manifest,
-        runtimes={"primary": primary, "held-out": held_out},
-        max_new_episodes=2,
-    )
+    shards = []
+    for split in ConfirmatorySplit:
+        shard = run_confirmatory_shard(
+            spec,
+            manifest,
+            split=split,
+            implementation_revision=IMPLEMENTATION_REVISION,
+            runtimes={"primary": primary, "held-out": held_out},
+            max_new_episodes=1,
+        )
+        assert len(shard.episodes) == 1
+        shard = run_confirmatory_shard(
+            spec,
+            manifest,
+            split=split,
+            implementation_revision=IMPLEMENTATION_REVISION,
+            runtimes={"primary": primary, "held-out": held_out},
+            existing=shard,
+        )
+        shards.append(shard)
 
-    assert len(shard.episodes) == 2
-    shard = run_confirmatory_shard(
-        spec,
-        manifest,
-        runtimes={"primary": primary, "held-out": held_out},
-        existing=shard,
-    )
-
-    assert len(shard.episodes) == len(manifest.assignments)
+    episodes = tuple(episode for shard in shards for episode in shard.episodes)
+    assert len(episodes) == len(manifest.assignments)
     requests = primary.requests + held_out.requests
     assert requests
     assert all("Directive for this step" not in item.prompt for item in requests)
     assert all("low_rate" not in item.prompt for item in requests)
     attacks = [
         episode
-        for episode in shard.episodes
+        for episode in episodes
         if episode.condition is StreamCondition.LOW_RATE
     ]
     benign = [
         episode
-        for episode in shard.episodes
+        for episode in episodes
         if episode.condition
         in {
             StreamCondition.BENIGN_STATIONARY,
@@ -166,7 +179,7 @@ def test_goal_driven_confirmatory_shard_uses_unscripted_prompts_and_scores() -> 
     )
     assert {
         episode.model_config_id
-        for episode in shard.episodes
+        for episode in episodes
         if episode.split is ConfirmatorySplit.TEST
     } == {"primary", "held-out"}
 
@@ -174,16 +187,20 @@ def test_goal_driven_confirmatory_shard_uses_unscripted_prompts_and_scores() -> 
     resumed = run_confirmatory_shard(
         spec,
         manifest,
+        split=ConfirmatorySplit.TEST,
+        implementation_revision=IMPLEMENTATION_REVISION,
         runtimes={"primary": primary, "held-out": held_out},
-        existing=shard,
+        existing=shards[-1],
     )
-    assert resumed == shard
+    assert resumed == shards[-1]
     assert len(primary.requests) + len(held_out.requests) == request_count
 
 
 def test_split_shards_do_not_start_frozen_test_assignments() -> None:
     spec = _execution_spec()
-    manifest = build_manifest(spec.design)
+    manifest = build_manifest(
+        spec.design, implementation_revision=IMPLEMENTATION_REVISION
+    )
     selected = select_shard_assignments(
         manifest,
         shard_index=0,
@@ -193,3 +210,17 @@ def test_split_shards_do_not_start_frozen_test_assignments() -> None:
 
     assert selected
     assert all(item.split is ConfirmatorySplit.VALIDATION for item in selected)
+
+    with pytest.raises(ValueError, match="implementation revision differs"):
+        run_confirmatory_shard(
+            spec,
+            manifest,
+            split=ConfirmatorySplit.CALIBRATION,
+            implementation_revision="e" * 40,
+            runtimes={
+                "primary": GoalFollowingRuntime(
+                    "open-model-primary", "revision-a"
+                )
+            },
+            max_new_episodes=1,
+        )
