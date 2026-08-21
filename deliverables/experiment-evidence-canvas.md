@@ -37,6 +37,8 @@ This canvas answers the substrate, attack, defense, data, and inference question
 | Phase 5 report | `artifacts/phase5-confirmatory-report.json` |
 | Phase 5 split data | `artifacts/phase5-confirmatory-{calibration,validation,test}-shard-*.json` |
 
+The fresh rerun manifest, whole-file SHA-256 values, and claim boundary are recorded in `artifacts/reviewer-evidence-20260821/README.md`.
+
 ## Defense placement
 
 ```text

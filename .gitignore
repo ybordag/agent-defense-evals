@@ -33,4 +33,5 @@ configs/local*.yaml
 
 # Local artifact-authoring intermediates
 .tmp/
+tmp/
 *.pptx.inspect.ndjson

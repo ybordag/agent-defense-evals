@@ -1,0 +1,100 @@
+{
+  "E01": {
+    "absolute_improvement": 0.0,
+    "baseline_max_cell_cvar": 0.9299999999999999,
+    "proposed_max_cell_cvar": 0.9299999999999999,
+    "proposed_stack": "diverse-stack",
+    "strongest_registered_baseline": "diverse-stack",
+    "success": false
+  },
+  "E02": {
+    "best_diverse_stack": "diverse-stack",
+    "diverse_geometry": {
+      "best_component_bypass": 0.4375,
+      "gamma": 0.40625,
+      "interaction_gap": 0.025,
+      "joint_singleton_bypass": 0.03125,
+      "realized_gain": 0.38125,
+      "realized_stack_bypass": 0.05625
+    },
+    "homogeneous_geometry": {
+      "best_component_bypass": 0.65625,
+      "gamma": 0.025000000000000022,
+      "interaction_gap": 0.018750000000000044,
+      "joint_singleton_bypass": 0.63125,
+      "realized_gain": 0.006249999999999978,
+      "realized_stack_bypass": 0.65
+    },
+    "joint_bypass_difference": 0.6,
+    "matched_homogeneous_stack": "message-ensemble",
+    "success": true
+  },
+  "E03": {
+    "absolute_improvement": 0.07000000000000006,
+    "adaptive_diverse_max_cell_cvar": 0.9299999999999999,
+    "adaptive_homogeneous_max_cell_cvar": 1.0,
+    "retained_test_gamma": 0.205,
+    "success": true
+  },
+  "E04": {
+    "compound_cell_count": 3,
+    "compound_proposed_max_cell_cvar": 0.7575,
+    "predictive_stack_count": 3,
+    "success": false,
+    "validation_gamma_to_heldout_robustness_spearman": 0.8660254037844387
+  },
+  "E05": {
+    "absolute_harm_reduction": 0.7,
+    "baseline_irreversible_harm_rate": 0.725,
+    "before_harm_intervention_rate": 0.95,
+    "benign_episodes": 40,
+    "false_alarm_rate": 0.0,
+    "false_alarm_wilson_upper": 0.06335344864545804,
+    "harm_reduction_hoeffding_lower": 0.5269181617397715,
+    "irreversible_harm_rate": 0.025,
+    "success": true
+  },
+  "evidence_scope": "controlled_synthetic",
+  "experiment_id": "phase7-tail-robustness-synthetic-v1",
+  "manifest_sha256": "90b4974babdb637d6a4a5a1c99d07ba610a9a8f487b57c9752a52431c7197c3a",
+  "operational": {
+    "diverse-pair": {
+      "mean_latency_ms": 43.97423047065475,
+      "mean_utility": 0.8841666666666667,
+      "registered_kind": "diverse"
+    },
+    "diverse-stack": {
+      "mean_latency_ms": 80.01336969125356,
+      "mean_utility": 0.8002083333333333,
+      "registered_kind": "diverse"
+    },
+    "message-ensemble": {
+      "mean_latency_ms": 40.04720322215092,
+      "mean_utility": 0.8880208333333334,
+      "registered_kind": "homogeneous"
+    },
+    "message-single": {
+      "mean_latency_ms": 14.051765327765391,
+      "mean_utility": 0.95875,
+      "registered_kind": "single"
+    },
+    "observe-only": {
+      "mean_latency_ms": 2.962775214710493,
+      "mean_utility": 1.0,
+      "registered_kind": "control"
+    }
+  },
+  "report_sha256": "3d04e16944fe33c5ecf79b031c5e83157172ece7ae7c71027ebdf75e37da79c5",
+  "selection_sha256": "df3a329e936c89ba3bc9b2b39598081c6dea5cbf407f76b68f87efb5a4461f81",
+  "selectors": {
+    "hierarchical_tail": "diverse-stack",
+    "pooled_cvar": "diverse-stack",
+    "pooled_mean": "diverse-stack",
+    "ucb_tail": "diverse-stack",
+    "worst_cell_mean": "diverse-stack"
+  },
+  "specification_sha256": "bc15d847f4bdd0c015e47d37b6c1a41e20a6049a37c1affd9161193de312d1bf",
+  "test_trajectories": 1200,
+  "validation_trajectories": 1200,
+  "warning": "Controlled synthetic outcomes validate estimands and leakage controls; they are not evidence about stochastic LLM agents."
+}
