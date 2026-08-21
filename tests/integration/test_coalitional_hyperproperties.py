@@ -61,3 +61,25 @@ def test_harmful_execution_is_irreversible_and_provenance_localized() -> None:
     assert not executions[0].reversible
     assert len(violations) == 1
     assert len(violations[0].subgraph_event_ids) < len(trace.events)
+
+
+def test_benign_execution_has_no_effective_protected_lineage() -> None:
+    spec = CoalitionalHyperpropertySpec(
+        experiment_id="phase4-benign-lineage-test",
+        base_seed=13,
+        topologies=(TopologyKind.CHAIN,),
+    )
+    result, trace = _run_episode(spec, TopologyKind.CHAIN, frozenset())
+
+    violations = evaluate_forbidden_flow(
+        trace,
+        ForbiddenFlowRule(
+            rule_id="protected-flow",
+            source_classification="protected",
+            sink="external",
+        ),
+    )
+
+    assert result.utility.success
+    assert not result.security.violation
+    assert violations == ()

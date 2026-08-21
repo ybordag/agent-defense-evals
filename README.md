@@ -21,6 +21,7 @@ its larger goal-driven 7B run remains pending.
 - [Phase 6 completion report](docs/implementation/phase-6-completion.md)
 - [Phase 7 optimization and transfer progress](docs/implementation/phase-7-plan.md)
 - [Phase 3 + 6 model-capacity result](docs/implementation/phase-7-model-capacity-result.md)
+- [Phase 4 model-workflow extension](docs/implementation/phase-7-model-workflow-plan.md)
 
 ## Development setup
 
@@ -170,4 +171,13 @@ Run the Phase 3 + Phase 6 Qwen 7B mediated-channel experiment on Thor:
 agent-defense-evals phase7-model-capacity \
   --config configs/experiments/phase7_model_capacity_7b.yaml \
   --output artifacts/phase7-model-capacity-7b-report.json
+```
+
+Run the Phase 4 end-to-end model workflow and structural-remediation experiment
+on Thor:
+
+```bash
+agent-defense-evals phase7-model-workflow \
+  --config configs/experiments/phase7_model_workflow_7b.yaml \
+  --output artifacts/phase7-model-workflow-7b-report.json
 ```

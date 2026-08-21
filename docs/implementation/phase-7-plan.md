@@ -69,6 +69,19 @@ experiment gates passed. The 0.5B control failed the sender-compliance
 manipulation check and is reported as a capability limitation rather than
 defense evidence. See [the full model-capacity result](phase-7-model-capacity-result.md).
 
+## Phase 4 model-workflow extension
+
+The end-to-end implementation path is now available for a pinned model run.
+All six consequential workflow actions are model-generated, while inactive
+role steps remain deterministic. It compares no defense, locally scoped role
+authorization, provenance hard blocking, and structural lineage remediation,
+with benign negative controls and exact task-utility checks.
+
+The remediation claim is deliberately narrow: it removes protected typed
+source dependencies while retaining the required public retrieval. It does not
+claim arbitrary text decontamination. See the
+[model-workflow experiment plan](phase-7-model-workflow-plan.md).
+
 ## Controlled framework result
 
 At a validation minimum-utility floor of `0.75`, the fixture selects the

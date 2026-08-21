@@ -113,6 +113,7 @@ class ExperimentSpec(FrozenModel):
             "sequential_signal_model",
             "capacity_sender_model",
             "capacity_receiver_model",
+            "artifact_workflow_model",
         }
         for agent in self.agents:
             if agent.policy.kind not in model_policy_kinds:

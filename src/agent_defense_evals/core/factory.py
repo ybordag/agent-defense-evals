@@ -10,6 +10,9 @@ from agent_defense_evals.agents.capacity_relay import (
     CapacitySenderModelAgent,
 )
 from agent_defense_evals.agents.model import StructuredModelAgent
+from agent_defense_evals.agents.model_artifact_workflow import (
+    ModelArtifactWorkflowAgent,
+)
 from agent_defense_evals.agents.scripted import ConstraintSharingAgent
 from agent_defense_evals.agents.secret_relay import (
     SecretReceiverAgent,
@@ -27,6 +30,11 @@ from agent_defense_evals.defenses.mediation import (
     MessageMediatorDefense,
 )
 from agent_defense_evals.defenses.scripted import BlockPlanDefense, RewritePlanDefense
+from agent_defense_evals.defenses.workflow import (
+    LocalWorkflowAuthorizationDefense,
+    ProtectedFlowDefense,
+    ProtectedLineageRemediationDefense,
+)
 from agent_defense_evals.models.base import ModelRuntime
 from agent_defense_evals.models.openai_runtime import OpenAICompatibleRuntime
 from agent_defense_evals.models.transformers_runtime import TransformersWhiteBoxRuntime
@@ -168,6 +176,26 @@ def build_agents(
                 )
             )
             continue
+        if agent.policy.kind == "artifact_workflow_model":
+            if not runtime_map:
+                runtime_map = build_model_runtimes(spec)
+            config = agent.policy.config
+            agents.append(
+                ModelArtifactWorkflowAgent(
+                    agent.agent_id,
+                    role=agent.role,
+                    runtime=runtime_map[str(config["runtime_id"])],
+                    base_seed=spec.base_seed,
+                    compromised=bool(config.get("compromised", False)),
+                    recipients=tuple(map(str, config.get("recipients", ()))),
+                    policy_backend=str(config.get("policy_backend", "model-v1")),
+                    max_new_tokens=int(config.get("max_new_tokens", 128)),
+                    do_sample=bool(config.get("do_sample", False)),
+                    temperature=float(config.get("temperature", 0.7)),
+                    top_p=float(config.get("top_p", 0.95)),
+                )
+            )
+            continue
         if agent.policy.kind in {"secret_sender", "secret_receiver"}:
             config = agent.policy.config
             channel = ChannelKind(str(config["channel"]))
@@ -247,6 +275,15 @@ def build_defenses(spec: ExperimentSpec) -> tuple[Defense, ...]:
                     randomized_retention=float(config.get("randomized_retention", 0.5)),
                 )
             )
+            continue
+        if defense.kind == "local_workflow_authorization":
+            defenses.append(LocalWorkflowAuthorizationDefense())
+            continue
+        if defense.kind == "protected_lineage_remediation":
+            defenses.append(ProtectedLineageRemediationDefense())
+            continue
+        if defense.kind == "protected_flow":
+            defenses.append(ProtectedFlowDefense())
             continue
         raise ValueError(f"unknown defense kind: {defense.kind}")
     return tuple(defenses)

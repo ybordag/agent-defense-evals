@@ -60,6 +60,10 @@ from agent_defense_evals.experiments.model_trace_evidence import (
     ModelTraceEvidenceSpec,
     run_model_trace_evidence,
 )
+from agent_defense_evals.experiments.model_workflow_remediation import (
+    ModelWorkflowRemediationSpec,
+    run_model_workflow_remediation,
+)
 from agent_defense_evals.experiments.white_box_information import (
     WhiteBoxInformationSpec,
     run_white_box_information,
@@ -144,6 +148,10 @@ def build_parser() -> argparse.ArgumentParser:
     phase7_model = subparsers.add_parser("phase7-model-capacity")
     phase7_model.add_argument("--config", type=Path, required=True)
     phase7_model.add_argument("--output", type=Path, required=True)
+
+    phase7_workflow = subparsers.add_parser("phase7-model-workflow")
+    phase7_workflow.add_argument("--config", type=Path, required=True)
+    phase7_workflow.add_argument("--output", type=Path, required=True)
     return parser
 
 
@@ -340,6 +348,15 @@ def main(argv: Sequence[str] | None = None) -> None:
     if args.command == "phase7-model-capacity":
         spec = load_yaml(args.config, ModelCapacityTransferSpec)
         report = run_model_capacity_transfer(spec)
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(
+            report.model_dump_json(indent=2) + "\n", encoding="utf-8"
+        )
+        print(report.model_dump_json(indent=2))
+        return
+    if args.command == "phase7-model-workflow":
+        spec = load_yaml(args.config, ModelWorkflowRemediationSpec)
+        report = run_model_workflow_remediation(spec)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(
             report.model_dump_json(indent=2) + "\n", encoding="utf-8"

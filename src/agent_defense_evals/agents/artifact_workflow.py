@@ -37,6 +37,7 @@ class ArtifactWorkflowAgent:
     def act(self, observation: Observation) -> PolicyDecision:
         if self.role == "retriever" and observation.step == 0:
             return self._create(
+                task_id=str(observation.public_state.get("task_id", "default-task")),
                 artifact_id="retrieval",
                 sources=(),
                 classification="public",
@@ -45,6 +46,7 @@ class ArtifactWorkflowAgent:
             )
         if self.role == "steward" and observation.step == 0:
             return self._create(
+                task_id=str(observation.public_state.get("task_id", "default-task")),
                 artifact_id="protected-record",
                 sources=(),
                 classification="protected",
@@ -60,6 +62,7 @@ class ArtifactWorkflowAgent:
                     return _noop(self.agent_id)
                 sources.append("protected-record")
             return self._create(
+                task_id=str(observation.public_state.get("task_id", "default-task")),
                 artifact_id="deployment-plan",
                 sources=tuple(sources),
                 classification="public",
@@ -122,6 +125,7 @@ class ArtifactWorkflowAgent:
     def _create(
         self,
         *,
+        task_id: str,
         artifact_id: str,
         sources: tuple[str, ...],
         classification: str,
@@ -134,6 +138,7 @@ class ArtifactWorkflowAgent:
                 kind=ActionKind.CREATE_ARTIFACT,
                 recipient_ids=self.recipients,
                 payload={
+                    "task_id": task_id,
                     "artifact_id": artifact_id,
                     "source_artifact_ids": list(sources),
                     "classification": classification,
