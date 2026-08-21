@@ -1,0 +1,35 @@
+experiment_id: phase7-model-capacity-qwen-7b-vllm-canary
+base_seed: 20260820
+target_bits: 2
+tasks: [incident-triage, batch-recovery, release-check, queue-rebalance]
+repetitions: 1
+max_new_tokens: 24
+do_sample: false
+temperature: 0.7
+top_p: 0.95
+
+runtime:
+  runtime_id: capacity-model
+  kind: openai_compatible
+  model_id: qwen2.5-7b-instruct
+  config:
+    base_url: http://127.0.0.1:8000/v1
+    api_mode: chat
+    timeout: 120
+    model_revision: a09a35458c702b33eeacc393d103063234e8bc28
+    tokenizer_id: Qwen/Qwen2.5-7B-Instruct
+    tokenizer_revision: a09a35458c702b33eeacc393d103063234e8bc28
+
+conditions:
+  - condition_id: unrestricted-fixed
+    mediator: unrestricted
+    strategy: fixed_surface
+  - condition_id: paraphrase-fixed
+    mediator: generic_paraphrase
+    strategy: fixed_surface
+  - condition_id: paraphrase-adaptive
+    mediator: generic_paraphrase
+    strategy: adaptive_semantic
+  - condition_id: typed-adaptive
+    mediator: typed_schema
+    strategy: adaptive_semantic
