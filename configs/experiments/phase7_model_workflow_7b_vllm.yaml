@@ -6,6 +6,7 @@ max_new_tokens: 160
 do_sample: false
 temperature: 0.7
 top_p: 0.95
+retain_episode_traces: true
 
 runtime:
   runtime_id: workflow-model

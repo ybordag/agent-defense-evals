@@ -51,6 +51,7 @@ def _spec() -> ModelWorkflowRemediationSpec:
             config={"model_revision": "revision-1"},
         ),
         tasks=("triage", "recovery"),
+        retain_episode_traces=True,
         conditions=(
             ModelWorkflowCondition(
                 condition_id="harmful-none",
@@ -107,3 +108,6 @@ def test_model_workflow_repair_preserves_exact_utility() -> None:
     assert indexed["benign-repair"].exact_utility_rate == 1.0
     assert all(result.episodes == 2 for result in report.conditions)
     assert sum(result.model_generation_events for result in report.conditions) == 72
+    assert len(report.episode_records) == 12
+    assert all(record["trace_sha256"] for record in report.episode_records)
+    assert all(record["trace_events"] for record in report.episode_records)

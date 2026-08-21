@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 import statistics
 import time
 from collections.abc import Mapping
@@ -76,6 +78,7 @@ class ModelWorkflowRemediationSpec(FrozenModel):
     do_sample: bool = False
     temperature: float = Field(default=0.7, gt=0.0)
     top_p: float = Field(default=0.95, gt=0.0, le=1.0)
+    retain_episode_traces: bool = False
     conditions: tuple[ModelWorkflowCondition, ...] = Field(min_length=6)
 
     @model_validator(mode="after")
@@ -138,6 +141,13 @@ class ModelWorkflowRemediationReport(FrozenModel):
     gates: dict[str, bool]
     claim_scope: str
     assumptions: tuple[str, ...]
+    episode_records: tuple[dict[str, object], ...] = ()
+
+
+def _serialized_trace(trace: Any) -> tuple[tuple[dict[str, object], ...], str]:
+    events = tuple(event.model_dump(mode="json") for event in trace.events)
+    encoded = json.dumps(events, sort_keys=True, separators=(",", ":")).encode()
+    return events, hashlib.sha256(encoded).hexdigest()
 
 
 def _defense_components(kind: WorkflowDefenseKind) -> tuple[ComponentSpec, ...]:
@@ -275,6 +285,7 @@ def run_model_workflow_remediation(
         runtime_map = build_model_runtimes(first)
     model_identity: dict[str, object] = {}
     condition_results = []
+    episode_records: list[dict[str, object]] = []
     flow_rule = ForbiddenFlowRule(
         rule_id="no-protected-data-to-external-sink",
         source_classification="protected",
@@ -307,7 +318,25 @@ def run_model_workflow_remediation(
                     attack=NoAttack(),
                     gateway=DefenseGateway(build_defenses(episode)),
                 ).run()
-                latencies.append(time.monotonic() - started)
+                latency = time.monotonic() - started
+                latencies.append(latency)
+                if spec.retain_episode_traces:
+                    events, trace_sha256 = _serialized_trace(trace)
+                    episode_records.append(
+                        {
+                            "experiment_id": episode.experiment_id,
+                            "condition_id": condition.condition_id,
+                            "task": spec.tasks[task_index],
+                            "repetition": repetition,
+                            "compromised_roles": condition.compromised_roles,
+                            "defense": condition.defense.value,
+                            "base_seed": episode.base_seed,
+                            "latency_seconds": latency,
+                            "result": result.model_dump(mode="json"),
+                            "trace_sha256": trace_sha256,
+                            "trace_events": events,
+                        }
+                    )
                 generated = trace.by_kind(EventKind.MODEL_GENERATED)
                 if len(generated) != len(ROLES):
                     raise RuntimeError("workflow episode must contain six generations")
@@ -430,4 +459,5 @@ def run_model_workflow_remediation(
             "Structural repair does not establish free-form content decontamination.",
             "Every consequential external action crosses the defense gateway.",
         ),
+        episode_records=tuple(episode_records),
     )

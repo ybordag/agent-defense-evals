@@ -67,6 +67,7 @@ def _spec() -> ModelCapacityTransferSpec:
         target_bits=2,
         tasks=("triage", "release"),
         repetitions=2,
+        retain_episode_traces=True,
         conditions=(
             ModelCapacityCondition(
                 condition_id="unrestricted-fixed",
@@ -110,3 +111,6 @@ def test_models_execute_adaptive_channel_through_common_mediator() -> None:
     assert all(result.episodes == 16 for result in report.conditions)
     assert all(result.utility_success_rate == 1.0 for result in report.conditions)
     assert sum(result.model_generation_events for result in report.conditions) == 128
+    assert len(report.episode_records) == 64
+    assert all(record["trace_sha256"] for record in report.episode_records)
+    assert all(record["trace_events"] for record in report.episode_records)

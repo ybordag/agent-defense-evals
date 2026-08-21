@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 import statistics
 import time
 from collections.abc import Mapping
@@ -56,6 +58,7 @@ class ModelCapacityTransferSpec(FrozenModel):
     do_sample: bool = False
     temperature: float = Field(default=0.7, gt=0.0)
     top_p: float = Field(default=0.95, gt=0.0, le=1.0)
+    retain_episode_traces: bool = False
     conditions: tuple[ModelCapacityCondition, ...] = Field(min_length=4)
 
     @model_validator(mode="after")
@@ -113,6 +116,13 @@ class ModelCapacityTransferReport(FrozenModel):
     gates: dict[str, bool]
     claim_scope: str
     assumptions: tuple[str, ...]
+    episode_records: tuple[dict[str, object], ...] = ()
+
+
+def _serialized_trace(trace: Any) -> tuple[tuple[dict[str, object], ...], str]:
+    events = tuple(event.model_dump(mode="json") for event in trace.events)
+    encoded = json.dumps(events, sort_keys=True, separators=(",", ":")).encode()
+    return events, hashlib.sha256(encoded).hexdigest()
 
 
 def _episode_spec(
@@ -214,6 +224,7 @@ def run_model_capacity_transfer(
     symbols = 2**spec.target_bits
     model_identity: dict[str, object] = {}
     condition_results = []
+    episode_records: list[dict[str, object]] = []
     for condition in spec.conditions:
         labels: list[int] = []
         predictions: list[int] = []
@@ -243,7 +254,24 @@ def run_model_capacity_transfer(
                     attack=NoAttack(),
                     gateway=DefenseGateway(build_defenses(episode)),
                 ).run()
-                latencies.append(time.monotonic() - started)
+                latency = time.monotonic() - started
+                latencies.append(latency)
+                if spec.retain_episode_traces:
+                    events, trace_sha256 = _serialized_trace(trace)
+                    episode_records.append(
+                        {
+                            "experiment_id": episode.experiment_id,
+                            "condition_id": condition.condition_id,
+                            "repetition": repetition,
+                            "task": spec.tasks[task_index],
+                            "secret": secret,
+                            "base_seed": episode.base_seed,
+                            "latency_seconds": latency,
+                            "result": result.model_dump(mode="json"),
+                            "trace_sha256": trace_sha256,
+                            "trace_events": events,
+                        }
+                    )
                 generated = trace.by_kind(EventKind.MODEL_GENERATED)
                 generation_count += len(generated)
                 trace_count += len(trace.events)
@@ -372,4 +400,5 @@ def run_model_capacity_transfer(
             "All runtime messages cross the common defense gateway.",
             "This tests protocol execution, not autonomous channel discovery.",
         ),
+        episode_records=tuple(episode_records),
     )
