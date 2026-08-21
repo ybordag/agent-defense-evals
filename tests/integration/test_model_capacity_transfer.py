@@ -107,5 +107,6 @@ def test_models_execute_adaptive_channel_through_common_mediator() -> None:
     assert indexed["paraphrase-adaptive"].delivered_message_information_bits == 2.0
     assert indexed["typed-adaptive"].attack_success_rate == 0.25
     assert indexed["typed-adaptive"].delivered_message_information_bits == 0.0
+    assert all(result.episodes == 16 for result in report.conditions)
     assert all(result.utility_success_rate == 1.0 for result in report.conditions)
-    assert sum(result.model_generation_events for result in report.conditions) == 64
+    assert sum(result.model_generation_events for result in report.conditions) == 128

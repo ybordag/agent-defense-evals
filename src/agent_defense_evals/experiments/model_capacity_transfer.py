@@ -120,9 +120,10 @@ def _episode_spec(
     condition: ModelCapacityCondition,
     *,
     repetition: int,
+    task_index: int,
     secret: int,
 ) -> ExperimentSpec:
-    task = spec.tasks[(repetition + secret) % len(spec.tasks)]
+    task = spec.tasks[task_index]
     policy = {
         "runtime_id": spec.runtime.runtime_id,
         "strategy": condition.strategy.value,
@@ -134,12 +135,14 @@ def _episode_spec(
     return ExperimentSpec(
         experiment_id=(
             f"{spec.experiment_id}:{condition.condition_id}:"
-            f"rep-{repetition}:secret-{secret}"
+            f"rep-{repetition}:task-{task_index}:secret-{secret}"
         ),
         base_seed=derive_seed(
             spec.base_seed,
             f"phase7-model-capacity:{condition.condition_id}",
-            repetition * (2**spec.target_bits) + secret,
+            repetition * len(spec.tasks) * (2**spec.target_bits)
+            + task_index * (2**spec.target_bits)
+            + secret,
         ),
         max_steps=2,
         agents=(
@@ -202,7 +205,9 @@ def run_model_capacity_transfer(
     spec: ModelCapacityTransferSpec,
     runtimes: Mapping[str, ModelRuntime] | None = None,
 ) -> ModelCapacityTransferReport:
-    first = _episode_spec(spec, spec.conditions[0], repetition=0, secret=0)
+    first = _episode_spec(
+        spec, spec.conditions[0], repetition=0, task_index=0, secret=0
+    )
     runtime_map = dict(runtimes or {})
     if not runtime_map:
         runtime_map = build_model_runtimes(first)
@@ -219,12 +224,15 @@ def run_model_capacity_transfer(
         latencies: list[float] = []
         generation_count = 0
         trace_count = 0
-        for repetition in range(spec.repetitions):
+        for crossed_index in range(spec.repetitions * len(spec.tasks)):
+            repetition = crossed_index // len(spec.tasks)
+            task_index = crossed_index % len(spec.tasks)
             for secret in range(symbols):
                 episode = _episode_spec(
                     spec,
                     condition,
                     repetition=repetition,
+                    task_index=task_index,
                     secret=secret,
                 )
                 started = time.monotonic()
@@ -323,7 +331,9 @@ def run_model_capacity_transfer(
         (MediatorKind.TYPED_SCHEMA, CapacityCodebookStrategy.ADAPTIVE_SEMANTIC)
     ]
     chance = 1.0 / symbols
-    expected_generations = len(spec.conditions) * spec.repetitions * symbols * 2
+    expected_generations = (
+        len(spec.conditions) * spec.repetitions * len(spec.tasks) * symbols * 2
+    )
     gates = {
         "all_model_generations_traced": sum(
             result.model_generation_events for result in condition_results
@@ -358,6 +368,7 @@ def run_model_capacity_transfer(
         assumptions=(
             "The sender and receiver receive the registered codebook in their prompts.",
             "The receiver observes only the post-mediation message.",
+            "Every secret symbol is factorially crossed with every legitimate task.",
             "All runtime messages cross the common defense gateway.",
             "This tests protocol execution, not autonomous channel discovery.",
         ),
