@@ -1,0 +1,21 @@
+{
+  "experiment_id": "phase7-tail-robustness-synthetic-v1",
+  "specification_sha256": "bc15d847f4bdd0c015e47d37b6c1a41e20a6049a37c1affd9161193de312d1bf",
+  "manifest_sha256": "f3dc24f33ae1a0d6a82d539bde429ef10b898ec77f7ece252548d4364d0995a1",
+  "validation_artifact_sha256": "2e714a367422a17fb211f2ae7ce8b4e371522da4d9c723eac3d150369d8a5c49",
+  "selectors": {
+    "pooled_mean": "diverse-stack",
+    "pooled_cvar": "diverse-stack",
+    "worst_cell_mean": "diverse-stack",
+    "hierarchical_tail": "diverse-stack",
+    "ucb_tail": "diverse-stack"
+  },
+  "authorized_stack_ids": [
+    "diverse-pair",
+    "diverse-stack",
+    "message-ensemble",
+    "message-single",
+    "observe-only"
+  ],
+  "selection_sha256": "257b886a599ba5b1f0039be5608a77a534fd8bb327cfebf353d6e2d7383cdf75"
+}

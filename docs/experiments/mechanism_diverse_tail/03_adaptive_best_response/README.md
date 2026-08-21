@@ -2,9 +2,10 @@
 
 ## Status
 
-**Planned.** **Precursor evidence:** existing adaptive semantic codebooks
-demonstrate one defense-aware channel switch, not a budget-matched best-response
-study across full stacks.
+**Controlled execution complete; synthetic gate passed.** Adaptive worst-cell
+CVaR is `0.93` for the diverse stack and `1.00` for the homogeneous comparator.
+The 7B canary still uses a registered semantic codebook, so equal-budget
+autonomous LLM best-response search remains pending.
 
 ## Question
 

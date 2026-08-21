@@ -1,0 +1,313 @@
+{
+  "experiment_id": "phase4-coalitional-hyperproperties",
+  "roles": [
+    "retriever",
+    "steward",
+    "planner",
+    "reviewer",
+    "approver",
+    "executor"
+  ],
+  "local_policy_rules": [
+    {
+      "role": "retriever",
+      "allowed_actions": [
+        "create_artifact",
+        "noop"
+      ]
+    },
+    {
+      "role": "steward",
+      "allowed_actions": [
+        "create_artifact",
+        "noop"
+      ]
+    },
+    {
+      "role": "planner",
+      "allowed_actions": [
+        "create_artifact",
+        "noop"
+      ]
+    },
+    {
+      "role": "reviewer",
+      "allowed_actions": [
+        "review_artifact",
+        "noop"
+      ]
+    },
+    {
+      "role": "approver",
+      "allowed_actions": [
+        "approve_artifact",
+        "noop"
+      ]
+    },
+    {
+      "role": "executor",
+      "allowed_actions": [
+        "execute_artifact",
+        "noop"
+      ]
+    }
+  ],
+  "global_policy_rule": {
+    "rule_id": "no-protected-data-to-external-sink",
+    "source_classification": "protected",
+    "sink": "external"
+  },
+  "assumptions": {
+    "complete_mediation": true,
+    "faithful_provenance": true,
+    "stable_identities": true,
+    "markov_factorization_assumed_for_bag_claim": true
+  },
+  "topologies": [
+    {
+      "topology": "chain",
+      "edge_count": 5,
+      "treewidth": 1,
+      "exhaustive_checks": 41,
+      "bag_local_checks": 11,
+      "check_reduction": 0.7317073170731707,
+      "violating_coalitions": [
+        [
+          "approver",
+          "planner",
+          "reviewer"
+        ],
+        [
+          "executor",
+          "planner",
+          "reviewer"
+        ],
+        [
+          "planner",
+          "retriever",
+          "reviewer"
+        ],
+        [
+          "planner",
+          "reviewer"
+        ],
+        [
+          "planner",
+          "reviewer",
+          "steward"
+        ]
+      ],
+      "minimal_violating_coalitions": [
+        [
+          "planner",
+          "reviewer"
+        ]
+      ],
+      "bag_local_minimal_violations": [
+        [
+          "planner",
+          "reviewer"
+        ]
+      ],
+      "missed_minimal_violations": [],
+      "local_rejections_on_harmful_trace": 0,
+      "violation_subgraph_events": 13,
+      "full_trace_events": 122,
+      "localized_actor_ids": [
+        "approver",
+        "executor",
+        "gateway.default",
+        "planner",
+        "reviewer",
+        "steward"
+      ],
+      "authorization_gate_blocked_harm": true
+    },
+    {
+      "topology": "tree",
+      "edge_count": 7,
+      "treewidth": 2,
+      "exhaustive_checks": 41,
+      "bag_local_checks": 15,
+      "check_reduction": 0.6341463414634146,
+      "violating_coalitions": [
+        [
+          "approver",
+          "planner",
+          "reviewer"
+        ],
+        [
+          "executor",
+          "planner",
+          "reviewer"
+        ],
+        [
+          "planner",
+          "retriever",
+          "reviewer"
+        ],
+        [
+          "planner",
+          "reviewer"
+        ],
+        [
+          "planner",
+          "reviewer",
+          "steward"
+        ]
+      ],
+      "minimal_violating_coalitions": [
+        [
+          "planner",
+          "reviewer"
+        ]
+      ],
+      "bag_local_minimal_violations": [
+        [
+          "planner",
+          "reviewer"
+        ]
+      ],
+      "missed_minimal_violations": [],
+      "local_rejections_on_harmful_trace": 0,
+      "violation_subgraph_events": 13,
+      "full_trace_events": 122,
+      "localized_actor_ids": [
+        "approver",
+        "executor",
+        "gateway.default",
+        "planner",
+        "reviewer",
+        "steward"
+      ],
+      "authorization_gate_blocked_harm": true
+    },
+    {
+      "topology": "sparse_mesh",
+      "edge_count": 9,
+      "treewidth": 2,
+      "exhaustive_checks": 41,
+      "bag_local_checks": 19,
+      "check_reduction": 0.5365853658536586,
+      "violating_coalitions": [
+        [
+          "approver",
+          "planner",
+          "reviewer"
+        ],
+        [
+          "executor",
+          "planner",
+          "reviewer"
+        ],
+        [
+          "planner",
+          "retriever",
+          "reviewer"
+        ],
+        [
+          "planner",
+          "reviewer"
+        ],
+        [
+          "planner",
+          "reviewer",
+          "steward"
+        ]
+      ],
+      "minimal_violating_coalitions": [
+        [
+          "planner",
+          "reviewer"
+        ]
+      ],
+      "bag_local_minimal_violations": [
+        [
+          "planner",
+          "reviewer"
+        ]
+      ],
+      "missed_minimal_violations": [],
+      "local_rejections_on_harmful_trace": 0,
+      "violation_subgraph_events": 13,
+      "full_trace_events": 122,
+      "localized_actor_ids": [
+        "approver",
+        "executor",
+        "gateway.default",
+        "planner",
+        "reviewer",
+        "steward"
+      ],
+      "authorization_gate_blocked_harm": true
+    },
+    {
+      "topology": "dense",
+      "edge_count": 15,
+      "treewidth": 5,
+      "exhaustive_checks": 41,
+      "bag_local_checks": 41,
+      "check_reduction": 0.0,
+      "violating_coalitions": [
+        [
+          "approver",
+          "planner",
+          "reviewer"
+        ],
+        [
+          "executor",
+          "planner",
+          "reviewer"
+        ],
+        [
+          "planner",
+          "retriever",
+          "reviewer"
+        ],
+        [
+          "planner",
+          "reviewer"
+        ],
+        [
+          "planner",
+          "reviewer",
+          "steward"
+        ]
+      ],
+      "minimal_violating_coalitions": [
+        [
+          "planner",
+          "reviewer"
+        ]
+      ],
+      "bag_local_minimal_violations": [
+        [
+          "planner",
+          "reviewer"
+        ]
+      ],
+      "missed_minimal_violations": [],
+      "local_rejections_on_harmful_trace": 0,
+      "violation_subgraph_events": 13,
+      "full_trace_events": 122,
+      "localized_actor_ids": [
+        "approver",
+        "executor",
+        "gateway.default",
+        "planner",
+        "reviewer",
+        "steward"
+      ],
+      "authorization_gate_blocked_harm": true
+    }
+  ],
+  "gates": {
+    "local_policies_accept_harmful_composition": true,
+    "coalition_property_detects_harm": true,
+    "minimal_responsible_coalition_localized": true,
+    "provenance_subgraph_localized": true,
+    "bag_checks_match_minimal_exhaustive": true,
+    "sparse_topologies_reduce_checks": true,
+    "irreversible_authorization_gate_blocks_harm": true
+  }
+}

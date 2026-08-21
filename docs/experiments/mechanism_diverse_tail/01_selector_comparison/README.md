@@ -2,8 +2,10 @@
 
 ## Status
 
-**Planned.** **Precursor evidence:** existing Phase 7 fixture results are
-implementation checks only.
+**Controlled execution complete; result inconclusive.** All five selectors
+selected `diverse-stack`, producing zero selector contrast on 1,200 sealed test
+trajectories. The implementation and split controls work; superiority is not
+established.
 
 ## Question
 

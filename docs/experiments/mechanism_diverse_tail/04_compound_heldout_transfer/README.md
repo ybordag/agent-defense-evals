@@ -2,9 +2,11 @@
 
 ## Status
 
-**Planned.** **Precursor capability:** Phase 7 records structural holdouts, but
-its current optimization matrix is a controlled fixture. No complementarity
-predictor or compound held-out confirmation has yet been executed.
+**Controlled execution complete; registered gate failed.** Validation
+complementarity correlates with controlled held-out robustness
+(`Spearman=0.866`), but E01 produced no selector advantage, so the compound gate
+correctly remains false. A genuinely held-out capable 7--9B family remains
+pending.
 
 ## Questions
 

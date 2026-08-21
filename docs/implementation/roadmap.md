@@ -12,9 +12,11 @@ Phases 0–4 and the controlled Phase 6 capacity-shaping experiment are
 implemented. The Phase 3 + 6 adaptive-mediation and Phase 4 model-workflow
 remediation experiments have also run successfully on pinned
 Qwen2.5-7B-Instruct. Phase 5's full registered 900-episode 7B confirmatory run
-and final report are complete. Phase 7 now has a separately specified
-mechanism-diverse tail-robustness program; its new episode-level contracts and
-held-out model execution remain in progress.
+and final report are complete. Phase 7's mechanism-diverse tail runner now has
+episode-level contracts, five selectors, sealed validation/test execution,
+2,400 controlled trajectories, and new 7B capacity/workflow canaries. A
+discriminative selector study, autonomous stack-aware attack search, and a
+genuinely held-out 7--9B model family remain in progress.
 
 ## Reset decision
 

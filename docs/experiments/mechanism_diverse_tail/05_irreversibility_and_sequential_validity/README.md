@@ -2,9 +2,10 @@
 
 ## Status
 
-**Planned.** **Precursor evidence:** existing Phase 4 remediation and Phase 5
-detection-delay results motivate the design but are not evidence from this
-integrated comparison.
+**Controlled execution complete; synthetic gate passed.** Irreversible harm
+falls from `0.725` to `0.025`, before-harm intervention is `0.95`, and the
+harm-reduction lower bound is `0.527`. The pinned 7B monitoring and workflow
+runs remain separate precursors rather than an integrated model confirmation.
 
 ## Question
 

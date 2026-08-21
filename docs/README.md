@@ -6,8 +6,9 @@ This documentation describes an open-weight evaluation harness for multi-agent s
 
 The repository implements Phases 0–6 against their bounded gates, including
 the complete frozen 900-episode Phase 5 Qwen2.5-7B confirmatory run. Phase 7's
-optimizer framework and two model-backed cross-phase experiments are
-implemented; held-out mechanism-diverse tail robustness remains in progress.
+optimizer, sealed 2,400-trajectory mechanism-diverse controlled suite, and
+pinned 7B capacity/workflow canaries are implemented; autonomous attacker and
+held-out-model confirmation remain in progress.
 
 ## Research program
 
@@ -32,6 +33,7 @@ implemented; held-out mechanism-diverse tail robustness remains in progress.
 - [Phase 3 + 6 model-capacity result](implementation/phase-7-model-capacity-result.md) records the balanced Qwen2.5-7B adaptive-channel experiment and small-model capability control.
 - [Phase 4 model-workflow result](implementation/phase-7-model-workflow-plan.md) records the end-to-end 7B model-agent and utility-preserving structural-remediation experiment.
 - [Mechanism-diverse tail-robustness experiments](experiments/mechanism_diverse_tail/README.md) define the new selector, common-mode failure, adaptive-attacker, compound-transfer, and irreversibility studies.
+- [Mechanism-diverse evidence report](experiments/mechanism_diverse_tail/evidence_report.md) records the controlled E01--E05 outcomes, new 7B canaries, evidence maturity, and remaining confirmation gates.
 
 ## Reading order
 

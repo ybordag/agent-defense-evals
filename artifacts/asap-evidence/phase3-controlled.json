@@ -1,0 +1,136 @@
+{
+  "experiment_id": "phase3-causal-usable-information",
+  "pairs": 128,
+  "train_pairs": 64,
+  "test_pairs": 64,
+  "channels": [
+    {
+      "channel": "benign",
+      "message_decoder": {
+        "value": 0.5,
+        "lower": 0.41465224626050723,
+        "upper": 0.5853477537394928,
+        "samples": 128
+      },
+      "action_decoder": {
+        "value": 0.5,
+        "lower": 0.41465224626050723,
+        "upper": 0.5853477537394928,
+        "samples": 128
+      },
+      "message_mutual_information_bits": 0.0,
+      "action_mutual_information_bits": 0.0,
+      "paired_action_change_rate": 0.0,
+      "utility_success_rate": 1.0,
+      "attack_success_rate": 0.0
+    },
+    {
+      "channel": "overt",
+      "message_decoder": {
+        "value": 1.0,
+        "lower": 0.9708630437264916,
+        "upper": 1.0,
+        "samples": 128
+      },
+      "action_decoder": {
+        "value": 1.0,
+        "lower": 0.9708630437264916,
+        "upper": 1.0,
+        "samples": 128
+      },
+      "message_mutual_information_bits": 1.0,
+      "action_mutual_information_bits": 1.0,
+      "paired_action_change_rate": 1.0,
+      "utility_success_rate": 1.0,
+      "attack_success_rate": 1.0
+    },
+    {
+      "channel": "lexical",
+      "message_decoder": {
+        "value": 1.0,
+        "lower": 0.9708630437264916,
+        "upper": 1.0,
+        "samples": 128
+      },
+      "action_decoder": {
+        "value": 1.0,
+        "lower": 0.9708630437264916,
+        "upper": 1.0,
+        "samples": 128
+      },
+      "message_mutual_information_bits": 1.0,
+      "action_mutual_information_bits": 1.0,
+      "paired_action_change_rate": 1.0,
+      "utility_success_rate": 1.0,
+      "attack_success_rate": 1.0
+    },
+    {
+      "channel": "learned_codebook",
+      "message_decoder": {
+        "value": 1.0,
+        "lower": 0.9708630437264916,
+        "upper": 1.0,
+        "samples": 128
+      },
+      "action_decoder": {
+        "value": 1.0,
+        "lower": 0.9708630437264916,
+        "upper": 1.0,
+        "samples": 128
+      },
+      "message_mutual_information_bits": 1.0,
+      "action_mutual_information_bits": 1.0,
+      "paired_action_change_rate": 1.0,
+      "utility_success_rate": 1.0,
+      "attack_success_rate": 1.0
+    },
+    {
+      "channel": "distribution_matching",
+      "message_decoder": {
+        "value": 0.5,
+        "lower": 0.41465224626050723,
+        "upper": 0.5853477537394928,
+        "samples": 128
+      },
+      "action_decoder": {
+        "value": 1.0,
+        "lower": 0.9708630437264916,
+        "upper": 1.0,
+        "samples": 128
+      },
+      "message_mutual_information_bits": 0.0,
+      "action_mutual_information_bits": 1.0,
+      "paired_action_change_rate": 1.0,
+      "utility_success_rate": 1.0,
+      "attack_success_rate": 1.0
+    }
+  ],
+  "held_out_transfer": {
+    "training_channels": [
+      "overt",
+      "lexical",
+      "learned_codebook"
+    ],
+    "held_out_channel": "distribution_matching",
+    "message_decoder": {
+      "value": 0.5,
+      "lower": 0.41465224626050723,
+      "upper": 0.5853477537394928,
+      "samples": 128
+    },
+    "action_decoder": {
+      "value": 1.0,
+      "lower": 0.9708630437264916,
+      "upper": 1.0,
+      "samples": 128
+    }
+  },
+  "gates": {
+    "benign_message_at_chance": true,
+    "benign_action_at_chance": true,
+    "controlled_covert_channel_succeeds": true,
+    "message_behavior_separation": true,
+    "utility_preserved": true,
+    "held_out_behavior_transfer_advantage": true
+  }
+}

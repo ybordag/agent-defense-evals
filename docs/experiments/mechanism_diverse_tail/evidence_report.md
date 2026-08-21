@@ -27,11 +27,11 @@ and cross-model transfer as the critical remaining tests.
 
 | Experiment | Current evidence | Sample | Result | Claim status |
 |---|---|---:|---|---|
-| E01 selector comparison | Controlled fixture rerun; new trajectory suite pending | 3 stacks × 9 aggregate fixture cases | Validation-only selector chooses the layered stack; fixture test CVaR is 0.39 versus 0.84 and 0.94 for baselines | Implementation-only until trajectory selector tournament completes |
-| E02 failure complementarity | Structural and mediator precursors; matched-fork run pending | 41 coalitions × 4 scripted topologies; 64 model-backed channel episodes | Provenance/action gating and typed mediation block different registered mechanisms | Complementarity not yet estimated |
-| E03 adaptive best response | Controlled adaptive search plus 7B registered-codebook canary | 1,024 controlled observations per mediator/mode; 64 Qwen2.5-7B episodes | Adaptive semantics bypass generic paraphrase (0.25 → 1.00); typed mediation holds attack success at 0.25 | Model-backed manipulation check, not autonomous best-response evidence |
-| E04 compound held-out transfer | Structural holdout accounting only | 6 hand-authored test cases | Transfer accounting works, but cases are not model-generated | Blocked on a qualified held-out 7–9B model family and executed compound cells |
-| E05 irreversibility and sequential validity | Frozen held-out Phase 5 evidence plus 7B workflow precursor | 900 Qwen2.5-7B sequential episodes; 24 direct-Transformers workflow episodes | Lifetime false-alarm gate passes; attack before-harm rates range from 0.275 to 1.00; targeted repair blocks registered harm with utility 1.00 | Sequential-validity precursor; end-to-end diverse enforcement remains unconfirmed |
+| E01 selector comparison | Controlled trajectory experiment | 1,200 validation + 1,200 sealed test trajectories | All five selectors choose `diverse-stack`; proposed advantage is 0.00 | Inconclusive by design; no selector-superiority claim |
+| E02 failure complementarity | Controlled matched attack panels plus structural/model precursors | 2,400 controlled trajectories; 41 coalitions × 4 scripted topologies; 64 model-backed channel episodes | Diverse-stack joint bypass 0.031 versus 0.631 homogeneous; realized bypass 0.056 versus 0.650 | Synthetic gate passes; LLM-agent complementarity untested |
+| E03 adaptive best response | Controlled adaptation plus 7B registered-codebook canary | 2,400 controlled trajectories; 64 Qwen2.5-7B episodes | Controlled adaptive worst-cell CVaR 0.93 versus 1.00 homogeneous; registered semantic adaptation defeats paraphrase in the 7B canary | Synthetic gate and model manipulation check pass; autonomous best response untested |
+| E04 compound held-out transfer | Controlled structural holdout | 3 synthetic predictive stacks; 3 compound synthetic cells | Validation complementarity/held-out robustness Spearman 0.866; compound gate fails because E01 has no advantage | Not supported; blocked on discriminative validation design and a held-out 7–9B family |
+| E05 irreversibility and sequential validity | Controlled enforcement plus frozen held-out Phase 5 evidence and 7B workflow precursor | 2,400 controlled trajectories; 900 Qwen2.5-7B sequential episodes; 24 Qwen2.5-7B vLLM workflow episodes | Synthetic harm 0.725 → 0.025; before-harm intervention 0.95; Phase 5 before-harm rates 0.275–1.00 | Synthetic gate passes; model-backed end-to-end diverse enforcement remains unconfirmed |
 
 ## Conjecture and primary estimands
 
@@ -61,6 +61,40 @@ gain \(\min_j p_j-p_\pi\), and interaction gap \(p_\pi-p_\cap\). This prevents a
 counterfactual singleton intersection from being mistaken for deployed-stack
 performance.
 
+## Controlled E01–E05 execution
+
+The new runner generated a manifest of 2,400 unique assignments bound to
+implementation revision `19abf75`: 1,200 validation trajectories and 1,200
+test trajectories. Test execution required the frozen selection artifact and
+verified specification, manifest, validation-artifact, and selection hashes.
+
+| Experiment | Primary controlled result | Gate |
+|---|---:|---|
+| E01 | All five selectors choose `diverse-stack`; improvement 0.00 | **Inconclusive** |
+| E02 | \(\Gamma=0.406\), realized gain 0.381, diverse versus homogeneous bypass difference 0.600 | **Pass (synthetic)** |
+| E03 | Adaptive worst-cell CVaR 0.93 diverse versus 1.00 homogeneous; difference 0.07 | **Pass (synthetic)** |
+| E04 | Validation complementarity/held-out robustness Spearman 0.866; three compound cells | **Fail**, because the registered compound selector advantage is absent |
+| E05 | Irreversible harm 0.725 → 0.025; harm reduction LCB 0.527; before-harm 0.95 | **Pass (synthetic)** |
+
+E01 is a useful negative result: because every selector chose the same stack,
+the fixture contains no evidence that the proposed hierarchical tail selector
+is better than pooled mean, pooled CVaR, or worst-cell mean selection. E04
+correctly remains false rather than treating favorable rank correlation as a
+complete transfer result.
+
+The controlled benign stratum contained 40 episodes for the selected stack and
+zero false alarms. Its Wilson upper bound is 0.063, which passes the synthetic
+fixture's registered 0.10 ceiling but would not certify a 0.05 ceiling.
+
+### Integrity identifiers
+
+- specification: `bc15d847f4bdd0c015e47d37b6c1a41e20a6049a37c1affd9161193de312d1bf`
+- manifest: `f3dc24f33ae1a0d6a82d539bde429ef10b898ec77f7ece252548d4364d0995a1`
+- validation artifact: `2e714a367422a17fb211f2ae7ce8b4e371522da4d9c723eac3d150369d8a5c49`
+- selection: `257b886a599ba5b1f0039be5608a77a534fd8bb327cfebf353d6e2d7383cdf75`
+- test artifact: `bbc1ec7c9840703064a8be24135bc88a6f7fa02eb4545c6b26a71f7c6ff88198`
+- final report: `5d4ce6c7e90317cc9531df344c8f324d01bdf934aa91a71204c571a786a3a184`
+
 ## Existing model-backed findings
 
 ### Covert channels defeat surface-only mediation
@@ -78,12 +112,14 @@ channels.
 
 ### Consequence-aware repair can dominate indiscriminate blocking
 
-The existing direct-Transformers Qwen2.5-7B workflow run contains four episodes
-per condition. The registered harmful workflow succeeds under no defense and
-local-only checks. Hard blocking prevents the harm but reduces exact utility to
-zero. Targeted provenance repair prevents the harm while preserving exact
-utility at 1.00. The sample is too small for a general effect claim, but it
-validates the end-to-end remediation path.
+The pinned Qwen2.5-7B vLLM workflow canary contains four episodes per condition
+and reproduces the earlier direct-Transformers result. The registered harmful
+workflow succeeds under no defense and local-only checks. Hard blocking
+prevents the harm but reduces exact utility to zero. Targeted provenance repair
+prevents the harm while preserving exact utility at 1.00, and it does not
+remediate any benign canary episode. Mean episode latency is 27.1--27.5 seconds.
+The sample is too small for a general effect claim, but it validates the
+end-to-end remediation path on the deployment runtime.
 
 ### Sequential validity is possible, but monitor superiority is not established
 
@@ -113,6 +149,16 @@ not superiority of the e-process.
 | Reversibility | Registered irreversible step and action gate | Severity-weighted irreversible consequences under enforcement |
 
 ## Reproduction
+
+Mechanism-diverse E01--E05 suite:
+
+```bash
+.venv/bin/python -m agent_defense_evals phase7-tail-plan --config configs/experiments/phase7_tail_robustness_synthetic.yaml --output artifacts/asap-evidence/tail-manifest.json --implementation-revision 19abf75
+.venv/bin/python -m agent_defense_evals phase7-tail-run --config configs/experiments/phase7_tail_robustness_synthetic.yaml --manifest artifacts/asap-evidence/tail-manifest.json --split validation --output artifacts/asap-evidence/tail-validation.json
+.venv/bin/python -m agent_defense_evals phase7-tail-select --config configs/experiments/phase7_tail_robustness_synthetic.yaml --manifest artifacts/asap-evidence/tail-manifest.json --validation-results artifacts/asap-evidence/tail-validation.json --output artifacts/asap-evidence/tail-selection.json
+.venv/bin/python -m agent_defense_evals phase7-tail-run --config configs/experiments/phase7_tail_robustness_synthetic.yaml --manifest artifacts/asap-evidence/tail-manifest.json --selection artifacts/asap-evidence/tail-selection.json --split test --output artifacts/asap-evidence/tail-test.json
+.venv/bin/python -m agent_defense_evals phase7-tail-report --config configs/experiments/phase7_tail_robustness_synthetic.yaml --manifest artifacts/asap-evidence/tail-manifest.json --selection artifacts/asap-evidence/tail-selection.json --validation-results artifacts/asap-evidence/tail-validation.json --test-results artifacts/asap-evidence/tail-test.json --output artifacts/asap-evidence/tail-report.json
+```
 
 Controlled reruns:
 

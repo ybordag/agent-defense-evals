@@ -2,9 +2,12 @@
 
 ## Status and scope
 
-**Status: planned.** Every experiment in this directory is a new experiment.
-Existing Phase 3--7 results may be reused as pilot data or implementation
-checks, but they do not count as confirmatory evidence for this program.
+**Status: controlled suite complete; model confirmation incomplete.** The
+shared runner executed 2,400 hash-bound synthetic trajectories and new pinned
+Qwen2.5-7B capacity/workflow canaries. See the
+[evidence report](evidence_report.md). Controlled outcomes validate estimands,
+selection sealing, and known-positive fixtures; they do not count as
+confirmatory evidence about stochastic LLM-agent robustness.
 
 This program tests the following bounded conjecture:
 
@@ -64,11 +67,11 @@ they can be unstable when marginal failure rates are near zero.
 
 | ID | Experiment | Primary question | Main comparison | Section 3.3 dimensions | Evidence status |
 |---|---|---|---|---|---|
-| E01 | [Selector comparison](01_selector_comparison/README.md) | Does worst-cell within-cell tail selection transfer better than mean-risk selectors? | Mean, pooled CVaR, worst-cell mean, hierarchical tail | All; emphasis on detectability, horizon, reversibility | Planned |
-| E02 | [Failure complementarity](02_failure_complementarity/README.md) | Do heterogeneous mechanisms reduce joint bypass beyond matched homogeneous ensembles? | Diverse stack vs same-surface ensembles | Detectability, locality, composition, attribution, horizon | Planned |
-| E03 | [Adaptive best response](03_adaptive_best_response/README.md) | Does complementarity survive attacker adaptation to each deployed stack? | Frozen attacker vs budget-matched stack-specific attacker | Detectability, directness, composition, horizon | Planned |
-| E04 | [Compound held-out transfer](04_compound_heldout_transfer/README.md) | Does validation failure geometry predict robustness, and does the selected stack survive compound shift? | Predictor baselines and selected-stack baselines | All eight dimensions across single-axis and compound holdouts | Planned |
-| E05 | [Irreversibility and sequential validity](05_irreversibility_and_sequential_validity/README.md) | Does tail optimization preserve lifetime error and prevent irreversible harm? | Fixed monitoring vs anytime evidence and pre-action controls | Cascading, composition, horizon, attribution, reversibility | Planned |
+| E01 | [Selector comparison](01_selector_comparison/README.md) | Does worst-cell within-cell tail selection transfer better than mean-risk selectors? | Mean, pooled CVaR, worst-cell mean, hierarchical tail | All; emphasis on detectability, horizon, reversibility | Controlled: inconclusive; all selectors chose one stack |
+| E02 | [Failure complementarity](02_failure_complementarity/README.md) | Do heterogeneous mechanisms reduce joint bypass beyond matched homogeneous ensembles? | Diverse stack vs same-surface ensembles | Detectability, locality, composition, attribution, horizon | Controlled gate passed; model-agent estimate pending |
+| E03 | [Adaptive best response](03_adaptive_best_response/README.md) | Does complementarity survive attacker adaptation to each deployed stack? | Frozen attacker vs budget-matched stack-specific attacker | Detectability, directness, composition, horizon | Controlled gate passed; autonomous LLM search pending |
+| E04 | [Compound held-out transfer](04_compound_heldout_transfer/README.md) | Does validation failure geometry predict robustness, and does the selected stack survive compound shift? | Predictor baselines and selected-stack baselines | All eight dimensions across single-axis and compound holdouts | Controlled compound gate failed; held-out model pending |
+| E05 | [Irreversibility and sequential validity](05_irreversibility_and_sequential_validity/README.md) | Does tail optimization preserve lifetime error and prevent irreversible harm? | Fixed monitoring vs anytime evidence and pre-action controls | Cascading, composition, horizon, attribution, reversibility | Controlled gate passed; 7B precursors only |
 
 ## What the current repository can already support
 

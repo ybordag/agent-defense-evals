@@ -2,9 +2,10 @@
 
 ## Status
 
-**Planned.** **Precursor capability:** the repository has distinct mechanisms,
-but it has not yet estimated their joint bypass geometry on comparable
-model-agent opportunities.
+**Controlled execution complete; synthetic gate passed.** The known-positive
+fixture estimates diverse-stack \(\Gamma=0.406\), realized gain `0.381`, and a
+`0.600` diverse-versus-homogeneous bypass difference. Comparable model-agent
+forks remain pending.
 
 ## Question
 
