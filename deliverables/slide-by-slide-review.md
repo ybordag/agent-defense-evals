@@ -4,7 +4,7 @@ Deck: `beyond-average-case-safety.pptx`
 
 ## Global assessment
 
-The revised 19-slide deck now makes one defensible argument: average-case evaluation is insufficient for multi-agent defense; a useful selector must consider conditional tail loss, non-overlapping failure sets, adaptive response, and operational utility. The deck does not claim that this selector has already won. It separates controlled harness validation, small online 7B mechanism canaries, and an offline sequential-monitoring study from the three confirmatory experiments that remain.
+The revised 20-slide deck now makes one defensible argument: average-case evaluation is insufficient for multi-agent defense; a useful selector must consider conditional tail loss, non-overlapping failure sets, adaptive response, and operational utility. The deck does not claim that this selector has already won. It separates controlled harness validation, small online 7B mechanism canaries, and an offline sequential-monitoring study from the three confirmatory experiments that remain.
 
 The new title, **Beyond Average-Case Safety**, is stronger than a method-first title because it states the problem and gives the audience a reason to care before introducing the proposed machinery.
 
@@ -30,7 +30,8 @@ The new title, **Beyond Average-Case Safety**, is stronger than a method-first t
 | 16 | Complementarity result | Shows that diverse layers have non-overlapping failures, then separately reports the enforcement interaction gap. This prevents counterfactual complementarity from being mistaken for deployed performance. | The result is from controlled fixtures; model-backed shadow forks remain required. |
 | 17 | Negative results | Makes scientific discipline visible: no selector contrast and no established transfer. This increases credibility more than hiding favorable diagnostics would. | Favorable secondary statistics cannot override failed primary gates. |
 | 18 | Evidence ledger | Gives the audience a clean three-way distinction: established mechanism paths, bounded measurements, and open confirmatory claims. | Concludes “strong mechanism evidence; incomplete robustness evidence.” |
-| 19 | Decision program | Ends with three experiments that can confirm or falsify the conjecture: model-backed complementarity, equal-budget best response, and held-out transfer. | Optimization is claimed only if the advantage survives all three. |
+| 19 | Decision program | Defines the three experiments that can confirm or falsify the conjecture: model-backed complementarity, equal-budget best response, and held-out transfer. | Optimization is claimed only if the advantage survives all three. |
+| 20 | Synthesize the insights | Links five learned principles to their evidence and design implications: trace trajectories, type interfaces, repair before blocking, optimize delay, and match failure sets. | The diversity row explicitly retains the positive interaction gap and open transfer question. |
 
 ## Interviewer-facing strengths
 
