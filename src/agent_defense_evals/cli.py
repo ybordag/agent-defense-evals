@@ -44,6 +44,10 @@ from agent_defense_evals.experiments.confirmatory_model import (
     ConfirmatoryExecutionSpec,
     run_confirmatory_shard,
 )
+from agent_defense_evals.experiments.defense_optimization import (
+    DefenseOptimizationSpec,
+    run_defense_optimization,
+)
 from agent_defense_evals.experiments.heterogeneous_policy_audit import (
     HeterogeneousPolicyAuditSpec,
     run_heterogeneous_policy_audit,
@@ -128,6 +132,10 @@ def build_parser() -> argparse.ArgumentParser:
     phase6 = subparsers.add_parser("phase6-run")
     phase6.add_argument("--config", type=Path, required=True)
     phase6.add_argument("--output", type=Path, required=True)
+
+    phase7 = subparsers.add_parser("phase7-run")
+    phase7.add_argument("--config", type=Path, required=True)
+    phase7.add_argument("--output", type=Path, required=True)
     return parser
 
 
@@ -306,6 +314,15 @@ def main(argv: Sequence[str] | None = None) -> None:
     if args.command == "phase6-run":
         spec = load_yaml(args.config, CapacityShapingSpec)
         report = run_capacity_shaping(spec)
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(
+            report.model_dump_json(indent=2) + "\n", encoding="utf-8"
+        )
+        print(report.model_dump_json(indent=2))
+        return
+    if args.command == "phase7-run":
+        spec = load_yaml(args.config, DefenseOptimizationSpec)
+        report = run_defense_optimization(spec)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(
             report.model_dump_json(indent=2) + "\n", encoding="utf-8"

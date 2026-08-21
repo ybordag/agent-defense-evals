@@ -27,6 +27,7 @@ resumable 7B confirmatory run is ready but has not yet been executed.
 - [Phase 4 completion report](implementation/phase-4-completion.md) records the coalition, topology, provenance, irreversible-gate, and heterogeneous-model results.
 - [Phase 5 plan and first increment](implementation/phase-5-plan.md) records the sequential evidence design, controlled results, and open-model integration plan.
 - [Phase 6 completion report](implementation/phase-6-completion.md) records the mediator, adaptive-codebook, memory-budget, action-gate, and capacity results.
+- [Phase 7 optimization and transfer progress](implementation/phase-7-plan.md) records the held-out split, robust-objective, defense-stack search, and shadow-policy framework.
 
 ## Reading order
 

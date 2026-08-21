@@ -177,6 +177,23 @@ Phase 7 target.
 
 ## Phase 7: defense optimization and transfer
 
+Status: first framework increment implemented; see
+[Phase 7 optimization and transfer progress](phase-7-plan.md). Phase 7 is the
+shared transfer and optimization layer, not an independent experiment performed
+after separately expanding every prior phase. The checked-in first report uses
+controlled fixture outcomes to verify split, objective, and export accounting;
+real cross-phase held-out execution remains.
+
+Recommended execution order:
+
+1. build the common Phase 7 sweep, split, objective, and reporting framework;
+2. combine Phases 3 and 6 against adaptive model-backed covert channels;
+3. extend Phase 4 to end-to-end model workflows and utility-preserving repair;
+4. run the Phase 5 canary and confirmatory splits through the shared execution
+   infrastructure;
+5. evaluate held-out models, prompts, attacks, topologies, coalitions, and
+   horizons before marking Phase 7 or broader cross-phase transfer complete.
+
 ### Build
 
 - attack-dimension sweeps;

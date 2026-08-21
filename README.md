@@ -18,6 +18,7 @@ are implemented; its larger goal-driven 7B run remains pending.
 - [Phase 4 completion report](docs/implementation/phase-4-completion.md)
 - [Phase 5 plan and first increment](docs/implementation/phase-5-plan.md)
 - [Phase 6 completion report](docs/implementation/phase-6-completion.md)
+- [Phase 7 optimization and transfer progress](docs/implementation/phase-7-plan.md)
 
 ## Development setup
 
@@ -151,4 +152,12 @@ Run the Phase 6 controlled capacity-shaping experiment:
 agent-defense-evals phase6-run \
   --config configs/experiments/phase6_capacity_shaping.yaml \
   --output artifacts/phase6-report.json
+```
+
+Run the controlled Phase 7 optimization-accounting fixture:
+
+```bash
+agent-defense-evals phase7-run \
+  --config configs/experiments/phase7_controlled_optimization.yaml \
+  --output artifacts/phase7-controlled-report.json
 ```
