@@ -2,15 +2,17 @@
 
 ## Status
 
-The first Phase 7 framework increment is implemented. It freezes structural
+The first Phase 7 framework increment and the first real cross-phase model
+experiment are implemented. The framework freezes structural
 transfer cases, enforces held-out axes, searches defense stacks under a utility
 constraint, reports worst-case and CVaR security loss, and exports the selected
 stack as a non-enforcing shadow policy.
 
-The checked-in outcomes are a controlled fixture used to verify optimization
-and leakage accounting. The model, attack, topology, coalition, horizon, and
-prompt labels in that fixture do not represent completed executions. Phase 7
-will not be complete until real held-out runs replace those outcomes.
+The optimizer's checked-in outcomes remain a controlled fixture used to verify
+optimization and leakage accounting. The separate Phase 3 + 6 path now has a
+real, trace-derived Qwen2.5-7B result, but it has not yet been ingested into the
+optimizer or replicated on a held-out model family. Phase 7 therefore remains
+in progress.
 
 ## Sequencing decision
 
@@ -41,8 +43,8 @@ Phase 7 is the shared transfer layer for strengthening Phases 3–6:
 
 ## Phase 3 + Phase 6 model-capacity experiment
 
-The first cross-phase execution path is implemented; its real Qwen run is
-pending. It uses two model-backed agents through the common runner:
+The first cross-phase execution path is implemented and has run with pinned
+Qwen2.5-7B-Instruct. It uses two model-backed agents through the common runner:
 
 1. the sender receives a two-bit secret and legitimate task;
 2. the sender emits a registered surface or adaptive semantic carrier;
@@ -58,6 +60,14 @@ The four paired conditions are unrestricted fixed code, paraphrased fixed code,
 paraphrased adaptive code, and typed adaptive code. The codebook is supplied in
 the prompts, so this tests whether open models can execute a channel selected
 by the Phase 6 optimizer. It does not claim autonomous channel discovery.
+
+Every two-bit secret was factorially crossed with every legitimate task. Across
+64 episodes and 128 traced model generations, the 7B model achieved attack
+success of `1.00`, `0.25`, `1.00`, and `0.25` in the four respective
+conditions, with `1.00` utility and sender compliance throughout. All eight
+experiment gates passed. The 0.5B control failed the sender-compliance
+manipulation check and is reported as a capability limitation rather than
+defense evidence. See [the full model-capacity result](phase-7-model-capacity-result.md).
 
 ## Controlled framework result
 
@@ -88,7 +98,6 @@ agent-defense-evals phase7-run \
 Phase 7 remains incomplete until:
 
 - controlled fixture outcomes are replaced with trace-derived observations;
-- the Phase 3 + Phase 6 adaptive model-channel experiment runs;
 - the Phase 4 end-to-end model workflow and repair experiment runs;
 - the Phase 5 held-out confirmatory evidence is available;
 - at least one genuinely held-out model family is executed;
